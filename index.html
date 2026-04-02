@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>骑行 AI 教练</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #f5f5f5;
+  min-height: 100vh;
+}
+
+.app {
+  max-width: 900px;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: white;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  padding: 18px 24px;
+  border-bottom: 1px solid #eee;
+  display: flex; align-items: center; gap: 12px;
+}
+.header-icon {
+  width: 38px; height: 38px;
+  background: #FC4C02; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+}
+.header h1 { font-size: 17px; font-weight: 600; color: #111; }
+.header p  { font-size: 13px; color: #888; margin-top: 2px; }
+
+.tabs { display: flex; border-bottom: 1px solid #eee; }
+.tab {
+  padding: 12px 24px; font-size: 14px; color: #888;
+  cursor: pointer; border-bottom: 2px solid transparent;
+  transition: all 0.15s;
+}
+.tab.active { color: #FC4C02; border-bottom-color: #FC4C02; font-weight: 500; }
+
+.panel { display: none; flex: 1; flex-direction: column; }
+.panel.active { display: flex; }
+
+.messages {
+  flex: 1; overflow-y: auto; padding: 24px;
+  display: flex; flex-direction: column; gap: 16px;
+  min-height: 400px;
+}
+
+.message { display: flex; gap: 10px; max-width: 88%; }
+.message.user { align-self: flex-end; flex-direction: row-reverse; }
+.message.assistant { align-self: flex-start; }
+
+.avatar {
+  width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 600;
+}
+.message.user .avatar { background: #111; color: white; }
+.message.assistant .avatar { background: #FC4C02; color: white; }
+
+.bubble {
+  padding: 12px 16px; border-radius: 18px;
+  font-size: 15px; line-height: 1.6; white-space: pre-wrap;
+}
+.message.user .bubble { background: #111; color: white; border-bottom-right-radius: 4px; }
+.message.assistant .bubble { background: #f0f0f0; color: #111; border-bottom-left-radius: 4px; }
+.message.thinking .bubble { color: #888; font-style: italic; }
+
+.suggestions {
+  padding: 0 24px 12px;
+  display: flex; gap: 8px; flex-wrap: wrap;
+}
+.suggestion {
+  padding: 7px 14px; border: 1px solid #ddd; border-radius: 20px;
+  font-size: 13px; color: #555; cursor: pointer; background: white;
+  transition: all 0.15s;
+}
+.suggestion:hover { border-color: #FC4C02; color: #FC4C02; }
+
+.input-area {
+  padding: 16px 24px; border-top: 1px solid #eee;
+  display: flex; gap: 10px; align-items: flex-end;
+}
+textarea {
+  flex: 1; border: 1px solid #ddd; border-radius: 12px;
+  padding: 12px 16px; font-size: 15px; font-family: inherit;
+  resize: none; outline: none; line-height: 1.5; max-height: 120px;
+  transition: border-color 0.15s;
+}
+textarea:focus { border-color: #FC4C02; }
+.send-btn {
+  width: 44px; height: 44px; border-radius: 50%; border: none;
+  background: #FC4C02; color: white; cursor: pointer; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  transition: opacity 0.15s;
+}
+.send-btn:hover { opacity: 0.85; }
+.send-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* Plan panel */
+.plan-panel { padding: 24px; flex: 1; overflow-y: auto; }
+
+.plan-toolbar {
+  display: flex; gap: 10px; margin-bottom: 20px; align-items: center;
+}
+.plan-toolbar input {
+  flex: 1; padding: 10px 14px;
+  border: 1px solid #ddd; border-radius: 8px;
+  font-size: 14px; outline: none; font-family: inherit;
+}
+.plan-toolbar input:focus { border-color: #FC4C02; }
+
+.btn {
+  padding: 10px 18px; border-radius: 8px; border: none;
+  font-size: 14px; cursor: pointer; font-weight: 500;
+  transition: all 0.15s; white-space: nowrap;
+}
+.btn-primary { background: #FC4C02; color: white; }
+.btn-primary:hover { opacity: 0.88; }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-outline { background: white; color: #333; border: 1px solid #ddd; }
+.btn-outline:hover { border-color: #333; }
+
+.plan-summary {
+  background: #fff8f6; border: 1px solid #ffd5c8;
+  border-radius: 10px; padding: 14px 18px; margin-bottom: 20px;
+  font-size: 14px; color: #c03a00; line-height: 1.6;
+}
+
+.plan-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px; margin-bottom: 24px;
+}
+
+.event-card {
+  border: 1px solid #e8e8e8; border-radius: 12px;
+  padding: 16px; background: white;
+  transition: box-shadow 0.15s;
+}
+.event-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+.event-card.rest { opacity: 0.55; }
+
+.event-date { font-size: 12px; color: #888; margin-bottom: 6px; }
+
+.event-name {
+  font-size: 15px; font-weight: 600; color: #111;
+  margin-bottom: 8px; border: none; outline: none;
+  width: 100%; font-family: inherit;
+  padding: 4px 0; border-bottom: 1px dashed transparent;
+  background: transparent; transition: border-color 0.15s;
+}
+.event-name:focus { border-bottom-color: #FC4C02; }
+
+.event-desc {
+  font-size: 13px; color: #555; line-height: 1.5;
+  border: none; outline: none; width: 100%;
+  font-family: inherit; resize: none;
+  padding: 4px 0; border-bottom: 1px dashed transparent;
+  background: transparent; transition: border-color 0.15s; min-height: 60px;
+}
+.event-desc:focus { border-bottom-color: #FC4C02; }
+
+.event-footer {
+  display: flex; align-items: center; gap: 8px; margin-top: 10px;
+}
+.tss-label { font-size: 12px; color: #888; }
+.tss-input {
+  width: 60px; padding: 4px 8px;
+  border: 1px solid #ddd; border-radius: 6px;
+  font-size: 13px; outline: none; text-align: center;
+}
+.tss-input:focus { border-color: #FC4C02; }
+.tss-badge {
+  margin-left: auto; padding: 3px 10px;
+  border-radius: 12px; font-size: 12px; font-weight: 500;
+}
+.tss-low  { background: #e8f5e9; color: #2e7d32; }
+.tss-mid  { background: #fff3e0; color: #e65100; }
+.tss-high { background: #fce4ec; color: #c62828; }
+
+.plan-actions {
+  display: flex; gap: 12px; justify-content: flex-end;
+  padding-top: 16px; border-top: 1px solid #eee;
+}
+
+.empty-plan { text-align: center; padding: 60px 24px; color: #aaa; }
+.empty-plan .icon { font-size: 48px; margin-bottom: 16px; }
+.empty-plan p { font-size: 15px; line-height: 1.8; }
+
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: #111; color: white; padding: 12px 20px;
+  border-radius: 10px; font-size: 14px; opacity: 0;
+  transition: opacity 0.3s; pointer-events: none; z-index: 999;
+}
+.toast.show { opacity: 1; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="header">
+    <div class="header-icon">🚴</div>
+    <div>
+      <h1>骑行 AI 教练</h1>
+      <p>Minghe · FTP 202W · 目标 220W · 6月15日</p>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('chat')">💬 对话</div>
+    <div class="tab" onclick="switchTab('plan')">📅 训练计划</div>
+  </div>
+
+  <!-- 对话面板 -->
+  <div class="panel active" id="chat-panel">
+    <div class="messages" id="messages">
+      <div class="message assistant">
+        <div class="avatar">AI</div>
+        <div class="bubble">你好 Minghe！我已读取你的 Strava 训练数据和 Intervals 状态。
+
+可以直接问我训练相关的问题，或切换到「训练计划」标签让我生成本周计划。</div>
+      </div>
+    </div>
+
+    <div class="suggestions">
+      <div class="suggestion" onclick="useSuggestion(this)">我今天状态怎么样？</div>
+      <div class="suggestion" onclick="useSuggestion(this)">最近训练负荷合理吗？</div>
+      <div class="suggestion" onclick="useSuggestion(this)">距离目标 220W 还差多远？</div>
+      <div class="suggestion" onclick="useSuggestion(this)">今天适合高强度训练吗？</div>
+    </div>
+
+    <div class="input-area">
+      <textarea id="chat-input" placeholder="输入你的问题..." rows="1"
+        onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+      <button class="send-btn" id="send-btn" onclick="sendMessage()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+          stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="22" y1="2" x2="11" y2="13"></line>
+          <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- 计划面板 -->
+  <div class="panel" id="plan-panel">
+    <div class="plan-panel">
+      <div class="plan-toolbar">
+        <input type="text" id="plan-input"
+          value="根据我当前状态，帮我制定本周的训练计划"
+          placeholder="描述需求，如：下周计划，侧重提升FTP，周六有比赛"/>
+        <button class="btn btn-primary" id="gen-btn" onclick="generatePlan()">生成计划</button>
+      </div>
+
+      <div id="plan-content">
+        <div class="empty-plan">
+          <div class="icon">📋</div>
+          <p>输入需求，点击「生成计划」<br>
+          AI 会根据你的真实训练数据生成个性化计划<br>
+          你可以直接编辑每天的内容，确认后一键写入 Intervals</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'http://10.16.31.156:8000'
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab').forEach((t, i) => {
+    t.classList.toggle('active', (tab==='chat'&&i===0)||(tab==='plan'&&i===1))
+  })
+  document.getElementById('chat-panel').classList.toggle('active', tab==='chat')
+  document.getElementById('plan-panel').classList.toggle('active', tab==='plan')
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast')
+  t.textContent = msg
+  t.classList.add('show')
+  setTimeout(() => t.classList.remove('show'), 2800)
+}
+
+function autoResize(el) {
+  el.style.height = 'auto'
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px'
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage() }
+}
+
+function useSuggestion(el) {
+  document.getElementById('chat-input').value = el.textContent
+  sendMessage()
+}
+
+function addMessage(role, text, cls='') {
+  const box = document.getElementById('messages')
+  const div = document.createElement('div')
+  div.className = `message ${role} ${cls}`
+  div.innerHTML = `<div class="avatar">${role==='user'?'M':'AI'}</div>
+    <div class="bubble">${text}</div>`
+  box.appendChild(div)
+  box.scrollTop = box.scrollHeight
+  return div
+}
+
+async function sendMessage() {
+  const input = document.getElementById('chat-input')
+  const btn = document.getElementById('send-btn')
+  const q = input.value.trim()
+  if (!q) return
+
+  input.value = ''; input.style.height = 'auto'; btn.disabled = true
+  addMessage('user', q)
+  const thinking = addMessage('assistant', '正在分析训练数据...', 'thinking')
+
+  try {
+    const res = await fetch(`${API}/ask`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question: q })
+    })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const data = await res.json()
+    thinking.remove()
+    addMessage('assistant', data.answer)
+  } catch (err) {
+    thinking.remove()
+    addMessage('assistant', `请求失败：${err.message}\n\n请确认服务正在运行。`)
+  }
+  btn.disabled = false
+  input.focus()
+}
+
+// ── 训练计划 ──────────────────────────────────────────────────
+let currentPlan = null
+
+function getTSSClass(tss) {
+  if (!tss || tss === 0) return ''
+  if (tss < 50) return 'tss-low'
+  if (tss < 120) return 'tss-mid'
+  return 'tss-high'
+}
+
+function getDayName(dateStr) {
+  return ['周日','周一','周二','周三','周四','周五','周六'][new Date(dateStr).getDay()]
+}
+
+function renderPlan(plan) {
+  currentPlan = JSON.parse(JSON.stringify(plan))
+  let html = `<div class="plan-summary">💡 ${plan.summary}</div><div class="plan-grid">`
+
+  plan.events.forEach((ev, i) => {
+    const isRest = ev.load_target === 0
+    const tssClass = getTSSClass(ev.load_target)
+    html += `
+    <div class="event-card ${isRest?'rest':''}">
+      <div class="event-date">${ev.date}（${getDayName(ev.date)}）</div>
+      <input class="event-name" value="${ev.name}"
+        oninput="currentPlan.events[${i}].name=this.value"/>
+      <textarea class="event-desc"
+        oninput="currentPlan.events[${i}].description=this.value">${ev.description}</textarea>
+      <div class="event-footer">
+        <span class="tss-label">目标 TSS</span>
+        <input class="tss-input" type="number" value="${ev.load_target}"
+          oninput="currentPlan.events[${i}].load_target=+this.value"/>
+        ${tssClass?`<span class="tss-badge ${tssClass}">${ev.load_target}</span>`:''}
+      </div>
+    </div>`
+  })
+
+  html += `</div>
+  <div class="plan-actions">
+    <button class="btn btn-outline" onclick="generatePlan()">重新生成</button>
+    <button class="btn btn-primary" onclick="writeToPlan()">写入 Intervals 📅</button>
+  </div>`
+
+  document.getElementById('plan-content').innerHTML = html
+}
+
+async function generatePlan() {
+  const q = document.getElementById('plan-input').value.trim()
+  if (!q) return
+
+  const btn = document.getElementById('gen-btn')
+  btn.disabled = true; btn.textContent = '生成中...'
+
+  document.getElementById('plan-content').innerHTML = `
+    <div class="empty-plan">
+      <div class="icon">⏳</div>
+      <p>正在分析你的训练数据，生成个性化计划...</p>
+    </div>`
+
+  try {
+    const res = await fetch(`${API}/plan/generate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question: q })
+    })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const plan = await res.json()
+    renderPlan(plan)
+  } catch (err) {
+    document.getElementById('plan-content').innerHTML = `
+      <div class="empty-plan"><p>生成失败：${err.message}</p></div>`
+  }
+
+  btn.disabled = false; btn.textContent = '生成计划'
+}
+
+async function writeToPlan() {
+  if (!currentPlan) return
+  const events = currentPlan.events.filter(e => e.load_target > 0)
+  if (!events.length) { showToast('没有需要写入的训练日'); return }
+
+  try {
+    const res = await fetch(`${API}/plan/create`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ events })
+    })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const data = await res.json()
+    showToast(`✅ 已写入 ${data.created} 个训练到 Intervals 日历`)
+  } catch (err) {
+    showToast(`❌ 写入失败：${err.message}`)
+  }
+}
+</script>
+</body>
+</html>

@@ -49,6 +49,15 @@ app = FastAPI(
     lifespan=lifespan
 )
 
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 
 # ── 接口定义 ──────────────────────────────────────────────────
 
@@ -81,3 +90,74 @@ def ask(request: AskRequest):
         question=request.question,
         answer=answer
     )
+
+
+from intervals_client import IntervalsClient
+
+class PlanRequest(BaseModel):
+    events: list  # 训练计划列表
+
+class PlanEvent(BaseModel):
+    date: str        # "2026-04-06"
+    name: str        # "Z2 有氧耐力"
+    description: str # "保持 65-75% FTP，约 140-150W"
+    load_target: int # 目标 TSS
+
+@app.post("/plan/create")
+def create_plan(request: PlanRequest):
+    """把训练计划写入 Intervals 日历"""
+    client = IntervalsClient()
+    results = []
+    for event in request.events:
+        result = client.create_event(
+            date=event["date"],
+            name=event["name"],
+            description=event["description"],
+            load_target=event.get("load_target")
+        )
+        results.append(result)
+    return {"created": len(results), "events": results}
+
+@app.post("/plan/generate")
+def generate_plan(request: AskRequest):
+    """
+    生成结构化训练计划，返回 JSON 格式
+    """
+    if chain is None:
+        raise HTTPException(status_code=503, detail="RAG 系统未初始化")
+
+    # 在问题里明确要求输出 JSON
+    structured_question = f"""
+{request.question}
+
+请以如下 JSON 格式输出本周每天的训练计划，不要输出任何其他内容：
+{{
+  "summary": "一句话说明本周计划思路",
+  "events": [
+    {{
+      "date": "2026-04-06",
+      "name": "训练名称",
+      "description": "具体内容描述",
+      "load_target": 90
+    }}
+  ]
+}}
+只输出 JSON，不要有任何前缀或解释。
+"""
+    import json
+    raw = chain.invoke(structured_question)
+
+    # 清理可能的 markdown 代码块
+    clean = raw.strip()
+    if clean.startswith("```"):
+        clean = clean.split("```")[1]
+        if clean.startswith("json"):
+            clean = clean[4:]
+    clean = clean.strip()
+
+    try:
+        plan = json.loads(clean)
+    except json.JSONDecodeError:
+        raise HTTPException(status_code=500, detail=f"模型返回格式错误：{raw}")
+
+    return plan

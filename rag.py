@@ -88,8 +88,70 @@ def build_chain(vectorstore):
     )
 
     # 3. 读取用户档案（固定注入，不靠检索）
-    with open("data/user_data/user_profile.md", "r", encoding="utf-8") as f:
-        user_profile = f.read()
+    # # 原来的（静态）：
+    # with open("data/user_data/user_profile.md", "r", encoding="utf-8") as f:
+    #     user_profile = f.read()
+
+    # 不在这里调用 API，改成每次请求时调用
+    def get_user_profile(_):
+        try:
+            from strava_client import StravaClient
+            from intervals_client import IntervalsClient
+            strava = StravaClient()
+            intervals = IntervalsClient()
+            activity_context = strava.build_activity_context(days=14)
+            wellness_context = intervals.build_user_context(activity_days=0)
+        except Exception as e:
+            print(f"API 获取失败，使用静态档案：{e}")
+            with open("data/user_data/user_profile.md", "r", encoding="utf-8") as f:
+                return f.read()
+
+        return f"""## 基本信息
+    - 姓名：Minghe，女，23岁，体重63kg
+    - FTP：202W，最大心率：194bpm
+
+    ## 训练目标
+    - 截止：2026年6月15日
+    - 目标FTP：220W（差18W），目标体重：60kg（差3kg）
+
+    {wellness_context}
+    {activity_context}
+    """
+
+    # # 替换成（实时）：
+    # from strava_client import StravaClient
+    # from intervals_client import IntervalsClient
+
+    # strava = StravaClient()
+    # intervals = IntervalsClient()
+
+    # # Strava 提供训练活动数据
+    # activity_context = strava.build_activity_context(days=14)
+
+    # # Intervals 提供状态值和基本信息
+    # wellness_context = intervals.build_user_context(activity_days=0)
+
+    # user_profile = f"""## 运动员基本信息
+    #     - 姓名：Minghe
+    #     - 性别：女
+    #     - 年龄：23岁
+    #     - 体重：63kg
+    #     - FTP：202W（3.20 W/kg）
+    #     - 最大心率：197bpm
+
+    #     ## 训练目标（固定）
+    #     - 截止：2026年6月15日
+    #     - 目标 FTP：220W（当前 202W，差 18W）
+    #     - 目标体重：60kg（当前 63kg，差 3kg）
+    #     - 目标功率体重比：3.67 W/kg（当前 3.20）
+
+    #     ## 当前状态(实时)
+    #     {wellness_context}
+
+    #     ## 近期训练(实时)
+    #     {activity_context}
+    # """
+
 
     # 4. Prompt Template：参数化 prompt，不再手拼字符串
     #    之前：system_prompt = "...{context}...".format(context=context)
@@ -130,7 +192,7 @@ def build_chain(vectorstore):
             # 动态检索：用问题去向量库找相关 chunk
             "context": retriever | format_docs,
             # 固定注入：用户档案每次完整传入
-            "user_profile": lambda _: user_profile,
+            "user_profile": get_user_profile,
             # 透传：问题原样传给 prompt 的 {question}
             "question": RunnablePassthrough()
         }
@@ -154,9 +216,10 @@ if __name__ == "__main__":
 
     # 用三个问题测试，覆盖不同场景
     questions = [
-        "我今天骑了2小时，功率180W，感觉很累，状态怎么样？",
-        "我的FTP是多少？最近训练负荷合理吗？",
-        "Z2训练应该控制在什么功率范围？"
+        "我当前的状态是什么？制定什么样的计划可以在指定日期达到制定目标？",
+        # "我今天骑了2小时，功率180W，感觉很累，状态怎么样？",
+        # "我的FTP是多少？最近训练负荷合理吗？",
+        # "Z2训练应该控制在什么功率范围？"
     ]
 
     for q in questions:
