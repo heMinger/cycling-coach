@@ -1,55 +1,57 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from contextlib import asynccontextmanager
+import asyncio
+import json
 
-# 从 rag.py 导入核心函数
-from rag import load_documents, split_documents, build_vectorstore, build_chain
+from rag import (
+    load_documents, split_documents, build_vectorstore, build_chain,
+    route_request, run_plan_pipeline
+)
+import memory as mem
 
 # ── 数据模型 ──────────────────────────────────────────────────
-# 定义请求体和响应体的结构
-# FastAPI 用 Pydantic 做自动校验：类型不对会直接返回 400 错误
-
 class AskRequest(BaseModel):
-    question: str          # 用户问题，必填
+    question: str
+    session_id: str = "default"     # 前端传入，用于关联历史
 
 class AskResponse(BaseModel):
-    question: str          # 原样返回问题，方便调试
-    answer: str            # 模型回答
+    question: str
+    answer: str
+    intent: str = "general"
 
+class PlanRequest(BaseModel):
+    events: list
 
-# ── 启动时初始化（只跑一次）──────────────────────────────────
-# 问题：每次请求都重新加载文档、构建向量库，太慢
-# 解法：用 lifespan 在服务启动时初始化一次，之后复用
-#
-# chain 存在这里，所有请求共享同一个实例
+# ── 全局状态 ──────────────────────────────────────────────────
 chain = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # 启动时执行
     global chain
     print("正在初始化 RAG 系统...")
+
+    # 初始化数据库
+    mem.init_db()
+    mem.clean_old_conversations()
+
     docs = load_documents()
     chunks = split_documents(docs)
     vectorstore = build_vectorstore(chunks)
     chain = build_chain(vectorstore)
     print("RAG 系统初始化完成，服务就绪")
-    
-    yield  # 服务运行中
-    
-    # 关闭时执行（清理资源）
+    yield
     print("服务关闭")
 
-
-# ── 创建 FastAPI 实例 ─────────────────────────────────────────
+# ── FastAPI 实例 ──────────────────────────────────────────────
 app = FastAPI(
     title="公路骑行 AI 教练",
-    description="基于 RAG 的个性化骑行训练建议系统",
-    version="0.1.0",
+    description="基于 RAG + 记忆系统的个性化骑行训练系统",
+    version="0.3.0",
     lifespan=lifespan
 )
-
-from fastapi.middleware.cors import CORSMiddleware
 
 app.add_middleware(
     CORSMiddleware,
@@ -58,54 +60,83 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-# ── 接口定义 ──────────────────────────────────────────────────
-
+# ── 接口 ──────────────────────────────────────────────────────
 @app.get("/")
 def root():
-    """健康检查接口，确认服务是否在线"""
-    return {"status": "running", "service": "cycling-coach"}
+    return {"status": "running", "service": "cycling-coach", "version": "0.3.0"}
 
+@app.get("/ui")
+def ui():
+    return FileResponse("index.html")
 
 @app.post("/ask", response_model=AskResponse)
-def ask(request: AskRequest):
-    """
-    核心接口：接收用户问题，返回 AI 教练建议
-    
-    请求体：
-        {"question": "我今天骑了2小时，功率180W，感觉很累"}
-    
-    返回：
-        {"question": "...", "answer": "..."}
-    """
+async def ask(request: AskRequest):
     if chain is None:
         raise HTTPException(status_code=503, detail="RAG 系统未初始化")
-    
     if not request.question.strip():
         raise HTTPException(status_code=400, detail="问题不能为空")
-    
-    answer = chain.invoke(request.question)
-    
-    return AskResponse(
-        question=request.question,
-        answer=answer
+
+    session_id = request.session_id
+    question = request.question
+
+    # 确保会话存在
+    mem.get_or_create_session(session_id)
+
+    # 获取短期历史（最近5轮）
+    recent_messages = mem.get_recent_messages(session_id)
+    short_term_history = mem.format_short_term_history(recent_messages)
+
+    # 意图路由
+    intent = route_request(question)
+
+    if intent == "plan":
+        try:
+            result = await asyncio.to_thread(run_plan_pipeline, question)
+            analysis = result["state_analysis"]
+            plan = result["plan"]
+            answer = f"""状态分析：
+{analysis.get('tsb_interpretation', '')}
+本周类型：{analysis.get('week_type', '')}
+{analysis.get('reasoning', '')}
+
+计划已生成（共{len(plan.get('events', []))}天）：{plan.get('summary', '')}
+
+请切换到「训练计划」标签查看完整计划并写入 Intervals。"""
+        except Exception as e:
+            print(f"计划生成失败：{e}")
+            answer = f"计划生成失败：{e}，请切换到「训练计划」标签重试。"
+    else:
+        # 注入短期历史
+        answer = await chain.ainvoke({
+            "question": question,
+            "short_term_history": short_term_history
+        })
+
+    # 保存本轮对话到 SQLite
+    mem.save_message(session_id, "user", question, intent)
+    mem.save_message(session_id, "assistant", answer, intent)
+
+    # 更新轮数，触发 AutoMemory（异步后台执行，不阻塞响应）
+    turn_count = mem.increment_turn(session_id)
+    asyncio.create_task(
+        asyncio.to_thread(mem.process_memory_update, session_id, question, turn_count)
     )
 
+    return AskResponse(question=question, answer=answer, intent=intent)
 
-from intervals_client import IntervalsClient
 
-class PlanRequest(BaseModel):
-    events: list  # 训练计划列表
+@app.post("/plan/generate")
+async def generate_plan(request: AskRequest):
+    try:
+        result = await asyncio.to_thread(run_plan_pipeline, request.question)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
-class PlanEvent(BaseModel):
-    date: str        # "2026-04-06"
-    name: str        # "Z2 有氧耐力"
-    description: str # "保持 65-75% FTP，约 140-150W"
-    load_target: int # 目标 TSS
 
 @app.post("/plan/create")
 def create_plan(request: PlanRequest):
-    """把训练计划写入 Intervals 日历"""
+    from intervals_client import IntervalsClient
     client = IntervalsClient()
     results = []
     for event in request.events:
@@ -118,46 +149,20 @@ def create_plan(request: PlanRequest):
         results.append(result)
     return {"created": len(results), "events": results}
 
-@app.post("/plan/generate")
-def generate_plan(request: AskRequest):
-    """
-    生成结构化训练计划，返回 JSON 格式
-    """
-    if chain is None:
-        raise HTTPException(status_code=503, detail="RAG 系统未初始化")
 
-    # 在问题里明确要求输出 JSON
-    structured_question = f"""
-{request.question}
+# ── 记忆管理接口（调试用）────────────────────────────────────
+@app.get("/memory/list")
+def list_memories():
+    """查看当前所有长期记忆"""
+    memories = mem.get_all_memories()
+    return {"memories": memories}
 
-请以如下 JSON 格式输出本周每天的训练计划，不要输出任何其他内容：
-{{
-  "summary": "一句话说明本周计划思路",
-  "events": [
-    {{
-      "date": "2026-04-06",
-      "name": "训练名称",
-      "description": "具体内容描述",
-      "load_target": 90
-    }}
-  ]
-}}
-只输出 JSON，不要有任何前缀或解释。
-"""
-    import json
-    raw = chain.invoke(structured_question)
-
-    # 清理可能的 markdown 代码块
-    clean = raw.strip()
-    if clean.startswith("```"):
-        clean = clean.split("```")[1]
-        if clean.startswith("json"):
-            clean = clean[4:]
-    clean = clean.strip()
-
-    try:
-        plan = json.loads(clean)
-    except json.JSONDecodeError:
-        raise HTTPException(status_code=500, detail=f"模型返回格式错误：{raw}")
-
-    return plan
+@app.delete("/memory/clear")
+def clear_memories():
+    """清空所有长期记忆（调试用）"""
+    import sqlite3
+    conn = sqlite3.connect(mem.DB_PATH)
+    conn.execute("DELETE FROM memories")
+    conn.commit()
+    conn.close()
+    return {"status": "cleared"}

@@ -277,7 +277,17 @@ textarea:focus { border-color: #FC4C02; }
 <div class="toast" id="toast"></div>
 
 <script>
-const API = 'http://10.16.31.156:8000'
+const API = 'http://106.53.60.175:8000'
+
+// 加在 script 顶部
+function getSessionId() {
+    let sid = localStorage.getItem('cycling_session_id')
+    if (!sid) {
+        sid = crypto.randomUUID()
+        localStorage.setItem('cycling_session_id', sid)
+    }
+    return sid
+}
 
 function switchTab(tab) {
   document.querySelectorAll('.tab').forEach((t, i) => {
@@ -332,9 +342,17 @@ async function sendMessage() {
   try {
     const res = await fetch(`${API}/ask`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question: q })
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+          question: q,
+          session_id: getSessionId()   // ← 加这个
+      })
     })
+    // const res = await fetch(`${API}/ask`, {
+    //   method: 'POST',
+    //   headers: { 'Content-Type': 'application/json' },
+    //   body: JSON.stringify({ question: q })
+    // })
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const data = await res.json()
     thinking.remove()
