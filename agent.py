@@ -39,29 +39,40 @@ def _parse_tool_result(content: str):
             return None
 
 
-# ── 自定义 ToolNode：执行工具 + 更新 state ────────────────────
+# ── 自定义 ToolNode：执行工具 + 更新 state + 替换 LLM 可见内容 ──
 
 def custom_tool_node(state: AgentState) -> dict:
-    """执行工具，并将 analyze_and_plan / modify_plan 的返回值写入 state 字段。"""
+    """执行工具，提取 current_plan 写入 state，并将工具输出替换为对用户友好的文本。"""
     tool_node = ToolNode(ALL_TOOLS)
     result = tool_node.invoke(state)
 
     updates = {}
+    new_messages = []
+
     for msg in result.get("messages", []):
         if not hasattr(msg, "name"):
+            new_messages.append(msg)
             continue
-        if msg.name == "analyze_and_plan":
-            data = _parse_tool_result(msg.content)
-            if isinstance(data, dict):
-                if "plan" in data:
-                    updates["current_plan"] = data["plan"]
-                if "state_analysis" in data:
-                    updates["state_analysis"] = data["state_analysis"]
-        elif msg.name == "modify_plan":
+
+        if msg.name in ("analyze_and_plan", "modify_plan"):
             data = _parse_tool_result(msg.content)
             if isinstance(data, dict) and "error" not in data:
-                updates["current_plan"] = data
+                # 提取结构化数据写入 state
+                if msg.name == "analyze_and_plan":
+                    updates["current_plan"] = data.get("plan")
+                    updates["state_analysis"] = data.get("state_analysis")
+                else:
+                    # modify_plan 直接返回 plan（含 summary + events）
+                    plan = {k: v for k, v in data.items() if k != "_display"}
+                    updates["current_plan"] = plan
 
+                # 用 _display 字段替换 ToolMessage 内容，LLM 直接透传给用户
+                display = data.get("_display", msg.content)
+                msg = msg.model_copy(update={"content": display})
+
+        new_messages.append(msg)
+
+    result["messages"] = new_messages
     return {**result, **updates}
 
 
@@ -95,18 +106,9 @@ def agent_node(state: AgentState) -> dict:
 
     system = SystemMessage(content=f"""你是一个专业的公路骑行教练，风格简练直接。
 
-## 工具使用原则
-- 回答个人训练问题前，先调用 get_full_context 获取用户当前状态
-- 纯知识类问题（训练区间定义等）直接调用 search_knowledge，不需要 get_full_context
-- 制定新计划：analyze_and_plan（工具内部会自动获取数据）
-- 用户说「改」「换」「调整」已有计划时：modify_plan
-- 计划生成后等用户确认，再调用 write_to_calendar
-- 发现长期记忆为空时，用 ask_user 收集用户基本信息{onboarding_hint}
-
-## 回答要求
-- 直接给结论，引用具体数据（TSB/CTL/IF/FTP占比）
-- 控制在200字以内
-- 不使用 ** 加粗，纯文本输出
+工具调用后，将工具返回的内容原文展示给用户，不要改写或缩减。
+普通回答控制在150字以内，不使用 markdown 格式或加粗符号。
+引用具体数据支撑判断（CTL/ATL/TSB/FTP占比）。{onboarding_hint}
 """)
 
     response = llm_with_tools.invoke([system] + trimmed)
@@ -131,6 +133,7 @@ def should_continue(state: AgentState) -> Literal["tools", "__end__"]:
 # ── 构建图 ────────────────────────────────────────────────────
 
 def build_graph():
+    import sqlite3
     from langgraph.checkpoint.sqlite import SqliteSaver
 
     builder = StateGraph(AgentState)
@@ -145,5 +148,7 @@ def build_graph():
     )
     builder.add_edge("tools", "agent")
 
-    checkpointer = SqliteSaver.from_conn_string("agent_checkpoints.db")
+    # from_conn_string() 在 3.x 是 context manager，直接传连接对象替代
+    conn = sqlite3.connect("agent_checkpoints.db", check_same_thread=False)
+    checkpointer = SqliteSaver(conn)
     return builder.compile(checkpointer=checkpointer)

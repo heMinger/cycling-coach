@@ -12,7 +12,7 @@ from langgraph.prebuilt import InjectedState
 load_dotenv()
 
 
-# ── 内部辅助函数（不暴露为工具）─────────────────────────────────
+# ── 内部辅助函数 ──────────────────────────────────────────────
 
 def _fetch_context() -> str:
     """并行拉取 Strava + Intervals，三层降级：实时 → cache → 静态档案。"""
@@ -68,26 +68,45 @@ def _get_llm():
 
 
 def _parse_json(raw: str) -> dict:
-    """解析 LLM 返回的 JSON，兼容 markdown 代码块包裹格式。"""
     if raw.startswith("```"):
         parts = raw.split("```")
         raw = parts[1].lstrip("json").strip() if len(parts) > 1 else raw
     return json.loads(raw.strip())
 
 
+def _format_plan(state_analysis: dict, plan: dict) -> str:
+    """把结构化计划转成可直接展示给用户的纯文本。"""
+    lines = []
+    if state_analysis:
+        lines.append(f"状态：{state_analysis.get('tsb_interpretation', '')}")
+        lines.append(f"本周类型：{state_analysis.get('week_type', '')}，TSS上限 {state_analysis.get('tss_limit', '-')}")
+        lines.append("")
+    lines.append(f"计划：{plan.get('summary', '')}")
+    lines.append("")
+    for ev in plan.get("events", []):
+        tss = ev.get("load_target", 0)
+        tss_str = f"（目标TSS {tss}）" if tss > 0 else "（休息日）"
+        lines.append(f"{ev['date']} {ev.get('name', '')}{tss_str}")
+        if ev.get("description"):
+            lines.append(f"  {ev['description']}")
+    lines.append("")
+    lines.append("确认写入 Intervals.icu 日历吗？")
+    return "\n".join(lines)
+
+
 # ── Tool 1: get_full_context ──────────────────────────────────
 
 @tool
 def get_full_context() -> str:
-    """获取用户完整训练上下文，包括实时训练状态、近14天活动和长期记忆。
+    """获取用户实时训练上下文：CTL/ATL/TSB 状态、近14天活动记录、长期记忆。
 
-    适用：对话开始时，回答任何个人训练相关问题前调用一次。
-    不适用：纯知识类问题（如「Z2是什么」）不需要调用。
+    这是获取用户个人训练数据的唯一途径。回答任何涉及用户个人状态、
+    疲劳程度、近期训练表现的问题前，必须先调用此工具。
+    内部并行拉取 Strava 和 Intervals.icu，三层降级保证可用性。
 
-    返回：包含 CTL/ATL/TSB、近期活动摘要、长期记忆的格式化文本。
+    不适用：用户询问通用骑行知识（区间定义/指标含义），那类问题用 search_knowledge。
     """
     import memory as mem
-
     context = _fetch_context()
     long_term = mem.get_all_memories()
     memory_section = f"\n## 关于你的长期记忆\n{long_term}" if long_term else "\n## 关于你的长期记忆\n（暂无）"
@@ -98,18 +117,17 @@ def get_full_context() -> str:
 
 @tool
 def search_knowledge(query: str) -> str:
-    """在骑行训练专业知识库中检索相关知识。
+    """在骑行训练知识库中检索专业知识。
 
-    适用：用户询问训练区间（Z1-Z6）、FTP/TSS/IF/NP 等指标含义、
-          恢复理论、过度训练信号等通用骑行知识。
-    不适用：查询用户个人训练数据（用 get_full_context）。
+    这是回答通用骑行训练知识问题的唯一途径，覆盖训练区间（Z1-Z6）、
+    FTP/TSS/IF/NP/CTL/ATL/TSB 等指标定义、恢复理论、过度训练信号等内容。
 
-    参数 query：简洁检索词，如「Z2训练功率范围」。
-    返回：最相关的3段知识文本。
+    不适用：查询用户个人训练数据或状态（用 get_full_context）。
+
+    参数 query：简洁检索词，如「Z2训练功率范围」「TSB负值意味着什么」。
     """
     from langchain_huggingface import HuggingFaceEmbeddings
     from langchain_chroma import Chroma
-
     embeddings = HuggingFaceEmbeddings(
         model_name="BAAI/bge-small-zh-v1.5",
         model_kwargs={"device": "cpu"},
@@ -124,17 +142,18 @@ def search_knowledge(query: str) -> str:
 
 @tool
 def analyze_and_plan(user_request: str) -> dict:
-    """分析当前训练状态并生成个性化训练计划。
+    """分析训练状态并生成个性化训练计划，是制定新计划的唯一正确途径。
 
-    内部分两步：
-    Step1 根据 CTL/ATL/TSB 判断本周类型（恢复/积累/激活周），确定 TSS 上限和禁止强度区间。
-    Step2 基于状态约束和用户需求生成具体训练计划（JSON）。
+    内部自动获取实时数据，无需提前调用 get_full_context。
+    两步执行：Step1 分析CTL/ATL/TSB确定本周类型和TSS上限；
+    Step2 基于状态约束生成逐天训练安排（JSON）。
+    工具返回已格式化的计划文本，收到后直接展示给用户，询问是否确认写入日历。
 
-    适用：用户想制定新训练计划时。
-    不适用：只想了解当前状态（用 get_full_context）；想修改已有计划（用 modify_plan）。
+    不适用：用户只想了解当前状态（用 get_full_context）；
+            用户想修改已有计划（用 modify_plan）。
 
-    参数 user_request：用户的计划需求描述。
-    返回：{"state_analysis": {...}, "plan": {"summary": "...", "events": [...]}}
+    参数 user_request：用户的计划需求，如「本周训练计划」「侧重提升FTP的计划」。
+    返回值包含 _display 字段（可直接展示的格式化文本）供透传给用户。
     """
     import memory as mem
 
@@ -150,24 +169,20 @@ def analyze_and_plan(user_request: str) -> dict:
 请严格按 JSON 输出，不要有任何其他内容：
 {{
   "tsb_value": 数字,
-  "tsb_interpretation": "TSB是多少，处于什么区间（精力充沛/最优训练/过渡/高风险）",
-  "week_type": "本周类型（恢复周/积累周/激活周）",
+  "tsb_interpretation": "TSB是多少，处于什么区间",
+  "week_type": "恢复周/积累周/激活周",
   "reasoning": "判断理由，引用具体CTL/ATL/TSB数值",
   "tss_limit": 数字,
-  "forbidden_zones": ["不适合的训练强度，如Z5、Z6"],
+  "forbidden_zones": ["不适合的训练强度"],
   "recommended_intensity": "适合的训练强度建议"
 }}"""
-
     try:
         state_analysis = _parse_json(llm.invoke(analysis_prompt).content)
-    except (json.JSONDecodeError, IndexError):
+    except Exception:
         state_analysis = {
-            "tsb_value": 0,
-            "tsb_interpretation": "状态解析失败，按正常周处理",
-            "week_type": "正常训练周",
-            "reasoning": "解析失败",
-            "tss_limit": 400,
-            "forbidden_zones": [],
+            "tsb_value": 0, "tsb_interpretation": "状态解析失败",
+            "week_type": "正常训练周", "reasoning": "解析失败",
+            "tss_limit": 400, "forbidden_zones": [],
             "recommended_intensity": "按正常计划训练",
         }
 
@@ -194,21 +209,25 @@ def analyze_and_plan(user_request: str) -> dict:
 
 用户需求：{user_request}
 
-请严格按 JSON 输出，不要有任何其他内容：
+请严格按 JSON 输出：
 {{
   "summary": "一句话说明本周计划思路",
   "events": [
     {{
       "date": "2026-05-05",
       "name": "训练名称",
-      "description": "具体内容，包含功率区间、时长、组数等",
+      "description": "具体内容，包含功率区间、时长",
       "load_target": 目标TSS数字
     }}
   ]
 }}"""
-
     plan = _parse_json(llm.invoke(plan_prompt).content)
-    return {"state_analysis": state_analysis, "plan": plan}
+
+    return {
+        "state_analysis": state_analysis,
+        "plan": plan,
+        "_display": _format_plan(state_analysis, plan),
+    }
 
 
 # ── Tool 4: modify_plan ───────────────────────────────────────
@@ -218,14 +237,15 @@ def modify_plan(
     modification_request: str,
     state: Annotated[dict, InjectedState],
 ) -> dict:
-    """对已生成的训练计划进行精确修改，不重新生成整个计划。
+    """对当前训练计划进行精确修改，是修改已有计划的唯一正确途径。
 
-    适用：用户已有计划，提出具体修改，如「把周二换到周三」「降低周四强度」「增加休息日」。
+    只做用户要求的精确改动，保留其他所有内容。自动读取当前计划，
+    工具返回已格式化的修改后计划文本，收到后直接展示，询问是否确认写入日历。
+
     不适用：用户想全新制定计划（用 analyze_and_plan）。
-    前置条件：必须已存在 current_plan，否则提示用户先生成计划。
+    前置条件：必须已有 current_plan（用户已生成过计划）。
 
-    参数 modification_request：用户的具体修改描述。
-    返回：修改后的完整计划 JSON，格式与 analyze_and_plan 的 plan 字段相同。
+    参数 modification_request：具体修改描述，如「把周二换到周三」「降低周四强度」。
     """
     current_plan = state.get("current_plan")
     if not current_plan:
@@ -246,22 +266,29 @@ def modify_plan(
   "summary": "更新后的计划说明",
   "events": [...]
 }}"""
-
-    return _parse_json(llm.invoke(prompt).content)
+    updated_plan = _parse_json(llm.invoke(prompt).content)
+    return {
+        **updated_plan,
+        "_display": _format_plan({}, updated_plan),
+    }
 
 
 # ── Tool 5: write_to_calendar ─────────────────────────────────
 
 @tool
-def write_to_calendar(plan: dict) -> str:
-    """将训练计划写入 Intervals.icu 日历。这是不可逆操作。
+def write_to_calendar(state: Annotated[dict, InjectedState]) -> str:
+    """将当前训练计划写入 Intervals.icu 日历。不可逆操作。
 
-    调用此工具后系统会暂停，等待用户在界面上确认后才执行写入。
-    用户取消则不写入。不要在其他地方处理确认逻辑。
+    当用户明确说「确认」「写入」「好的」等表示同意时调用此工具，无需传入任何参数，
+    工具自动读取已生成的计划。调用后系统会再次暂停等待用户在界面上最终确认。
 
-    参数 plan：包含 events 列表的计划 dict，每个 event 需有 date/name/description/load_target。
-    返回：写入结果摘要。
+    前置条件：必须已调用过 analyze_and_plan 或 modify_plan 生成计划。
+    不适用：用户还未确认计划内容，或尚未生成计划。
     """
+    plan = state.get("current_plan")
+    if not plan:
+        return "没有可写入的计划，请先使用 analyze_and_plan 生成计划"
+
     confirmed = interrupt({
         "type": "confirm",
         "plan": plan,
@@ -273,9 +300,8 @@ def write_to_calendar(plan: dict) -> str:
 
     from intervals_client import IntervalsClient
     client = IntervalsClient()
+    written, errors = 0, []
 
-    written = 0
-    errors = []
     for event in plan.get("events", []):
         if event.get("load_target", 0) <= 0:
             continue
@@ -292,7 +318,7 @@ def write_to_calendar(plan: dict) -> str:
 
     result = f"成功写入 {written} 天训练计划到 Intervals.icu 日历"
     if errors:
-        result += f"\n写入失败 {len(errors)} 条：{'; '.join(errors)}"
+        result += f"\n失败 {len(errors)} 条：{'; '.join(errors)}"
     return result
 
 
@@ -300,24 +326,19 @@ def write_to_calendar(plan: dict) -> str:
 
 @tool
 def ask_user(question: str) -> str:
-    """向用户主动提问，获取信息或确认状态。
+    """向用户主动提问以获取关键信息，用于 onboarding 或澄清模糊请求。
 
-    适用场景：
-    - 长期记忆中有伤病记录，需确认最新状态
-    - 用户请求模糊，需要澄清
-    - Onboarding：长期记忆为空时收集基本信息（FTP/目标/伤病/固定休息日）
-    - 目标赛事临近，确认参赛状态
-
-    不适用：信息已足够时不要过度询问。
+    适用：长期记忆为空（新用户），需收集 FTP、训练目标、伤病史、固定休息日；
+          用户请求模糊需要澄清；长期记忆中有伤病记录，需确认最新状态。
+    不适用：已有足够信息时不要过度询问。
 
     参数 question：向用户提出的具体问题。
-    返回：用户的回答文本。
+    返回：用户的回答，直接作为信息使用。
     """
     answer = interrupt({"type": "input", "question": question})
     return str(answer)
 
 
-# 导出工具列表
 ALL_TOOLS = [
     get_full_context,
     search_knowledge,
