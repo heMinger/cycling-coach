@@ -4,5 +4,6 @@ __pycache__/
 chroma_db/
 memory.db
 cache/
-__pycache__/
-chroma_db/
+agent_checkpoints.db
+agent_checkpoints.db-shm
+agent_checkpoints.db-wal
