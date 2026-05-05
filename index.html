@@ -277,18 +277,19 @@ textarea:focus { border-color: #FC4C02; }
 <div class="toast" id="toast"></div>
 
 <script>
-const API = 'http://106.53.60.175:8000'
+const API = 'http://106.53.60.175:8001'
 
-// 加在 script 顶部
+// ── Session ───────────────────────────────────────────────────
 function getSessionId() {
-    let sid = localStorage.getItem('cycling_session_id')
-    if (!sid) {
-        sid = crypto.randomUUID()
-        localStorage.setItem('cycling_session_id', sid)
-    }
-    return sid
+  let sid = localStorage.getItem('cycling_session_id')
+  if (!sid) {
+    sid = 'session-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9)
+    localStorage.setItem('cycling_session_id', sid)
+  }
+  return sid
 }
 
+// ── UI 基础 ───────────────────────────────────────────────────
 function switchTab(tab) {
   document.querySelectorAll('.tab').forEach((t, i) => {
     t.classList.toggle('active', (tab==='chat'&&i===0)||(tab==='plan'&&i===1))
@@ -329,13 +330,112 @@ function addMessage(role, text, cls='') {
   return div
 }
 
+function setInputLocked(locked) {
+  document.getElementById('send-btn').disabled = locked
+  document.getElementById('chat-input').disabled = locked
+}
+
+// ── 响应处理（统一入口）──────────────────────────────────────
+function handleResponse(data) {
+  if (data.type === 'message') {
+    addMessage('assistant', data.answer)
+    setInputLocked(false)
+  } else if (data.type === 'awaiting_confirmation') {
+    showConfirmCard(data.plan, data.message)
+  } else if (data.type === 'awaiting_input') {
+    showInputPrompt(data.question)
+  }
+}
+
+// ── 确认卡片：write_to_calendar interrupt ─────────────────────
+function showConfirmCard(plan, message) {
+  const box = document.getElementById('messages')
+  const div = document.createElement('div')
+  div.className = 'message assistant'
+  div.id = 'confirm-card'
+
+  const summary = plan && plan.summary ? plan.summary : ''
+  const evCount = plan && plan.events ? plan.events.filter(e => e.load_target > 0).length : 0
+
+  div.innerHTML = `
+    <div class="avatar">AI</div>
+    <div class="bubble" style="max-width:420px">
+      <div style="margin-bottom:10px">${message || '训练计划已生成，确认写入 Intervals.icu 日历？'}</div>
+      ${summary ? `<div style="font-size:13px;color:#888;margin-bottom:12px">💡 ${summary}（共 ${evCount} 个训练日）</div>` : ''}
+      <div style="display:flex;gap:10px">
+        <button class="btn btn-primary" style="flex:1" onclick="doResume(true)">确认写入 📅</button>
+        <button class="btn btn-outline" style="flex:1" onclick="doResume(false)">取消</button>
+      </div>
+    </div>`
+  box.appendChild(div)
+  box.scrollTop = box.scrollHeight
+
+  // 同步渲染到计划标签页
+  if (plan) renderPlan(plan, true)
+}
+
+// ── 输入提示：ask_user interrupt ─────────────────────────────
+function showInputPrompt(question) {
+  const box = document.getElementById('messages')
+  const div = document.createElement('div')
+  div.className = 'message assistant'
+  div.id = 'input-prompt'
+
+  div.innerHTML = `
+    <div class="avatar">AI</div>
+    <div class="bubble" style="max-width:420px">
+      <div style="margin-bottom:10px">${question}</div>
+      <div style="display:flex;gap:8px">
+        <input id="prompt-input" type="text" placeholder="输入回答..."
+          style="flex:1;padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px;outline:none"
+          onkeydown="if(event.key==='Enter')submitPrompt()"/>
+        <button class="btn btn-primary" onclick="submitPrompt()">发送</button>
+      </div>
+    </div>`
+  box.appendChild(div)
+  box.scrollTop = box.scrollHeight
+  setTimeout(() => document.getElementById('prompt-input')?.focus(), 100)
+}
+
+function submitPrompt() {
+  const input = document.getElementById('prompt-input')
+  const answer = input?.value?.trim()
+  if (!answer) return
+  document.getElementById('input-prompt')?.remove()
+  addMessage('user', answer)
+  doResume(answer)
+}
+
+// ── Resume（确认/取消/回答）─────────────────────────────────
+async function doResume(value) {
+  document.getElementById('confirm-card')?.remove()
+  const thinking = addMessage('assistant', '正在处理...', 'thinking')
+
+  try {
+    const res = await fetch(`${API}/resume`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ session_id: getSessionId(), value })
+    })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const data = await res.json()
+    thinking.remove()
+    handleResponse(data)
+  } catch (err) {
+    thinking.remove()
+    addMessage('assistant', `操作失败：${err.message}`)
+    setInputLocked(false)
+  }
+}
+
+// ── 发送消息 ──────────────────────────────────────────────────
 async function sendMessage() {
   const input = document.getElementById('chat-input')
-  const btn = document.getElementById('send-btn')
   const q = input.value.trim()
   if (!q) return
 
-  input.value = ''; input.style.height = 'auto'; btn.disabled = true
+  input.value = ''; input.style.height = 'auto'
+  setInputLocked(true)
   addMessage('user', q)
   const thinking = addMessage('assistant', '正在分析训练数据...', 'thinking')
 
@@ -343,30 +443,22 @@ async function sendMessage() {
     const res = await fetch(`${API}/ask`, {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
-          question: q,
-          session_id: getSessionId()   // ← 加这个
-      })
+      body: JSON.stringify({ question: q, session_id: getSessionId() })
     })
-    // const res = await fetch(`${API}/ask`, {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ question: q })
-    // })
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const data = await res.json()
     thinking.remove()
-    addMessage('assistant', data.answer)
+    handleResponse(data)
   } catch (err) {
     thinking.remove()
     addMessage('assistant', `请求失败：${err.message}\n\n请确认服务正在运行。`)
+    setInputLocked(false)
   }
-  btn.disabled = false
-  input.focus()
 }
 
-// ── 训练计划 ──────────────────────────────────────────────────
+// ── 训练计划标签页 ────────────────────────────────────────────
 let currentPlan = null
+let planPendingConfirm = false  // 计划标签页是否等待用户确认
 
 function getTSSClass(tss) {
   if (!tss || tss === 0) return ''
@@ -379,8 +471,9 @@ function getDayName(dateStr) {
   return ['周日','周一','周二','周三','周四','周五','周六'][new Date(dateStr).getDay()]
 }
 
-function renderPlan(plan) {
+function renderPlan(plan, awaitingConfirm = false) {
   currentPlan = JSON.parse(JSON.stringify(plan))
+  planPendingConfirm = awaitingConfirm
   let html = `<div class="plan-summary">💡 ${plan.summary}</div><div class="plan-grid">`
 
   plan.events.forEach((ev, i) => {
@@ -402,15 +495,24 @@ function renderPlan(plan) {
     </div>`
   })
 
-  html += `</div>
-  <div class="plan-actions">
-    <button class="btn btn-outline" onclick="generatePlan()">重新生成</button>
-    <button class="btn btn-primary" onclick="writeToPlan()">写入 Intervals 📅</button>
-  </div>`
+  // 根据是否等待确认，渲染不同的操作按钮
+  if (awaitingConfirm) {
+    html += `</div>
+    <div class="plan-actions">
+      <button class="btn btn-outline" onclick="doResume(false)">取消</button>
+      <button class="btn btn-primary" onclick="doResume(true)">确认写入 Intervals 📅</button>
+    </div>`
+  } else {
+    html += `</div>
+    <div class="plan-actions">
+      <button class="btn btn-outline" onclick="generatePlan()">重新生成</button>
+    </div>`
+  }
 
   document.getElementById('plan-content').innerHTML = html
 }
 
+// 生成计划：通过 /ask 接口走 Agent 流程
 async function generatePlan() {
   const q = document.getElementById('plan-input').value.trim()
   if (!q) return
@@ -425,39 +527,28 @@ async function generatePlan() {
     </div>`
 
   try {
-    const res = await fetch(`${API}/plan/generate`, {
+    const res = await fetch(`${API}/ask`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question: q })
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ question: q, session_id: getSessionId() })
     })
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const plan = await res.json()
-    renderPlan(plan)
+    const data = await res.json()
+
+    if (data.type === 'awaiting_confirmation') {
+      renderPlan(data.plan, true)
+      // 同步在对话标签页也显示确认卡片
+      addMessage('assistant', `计划已生成：${data.plan?.summary || ''}`)
+    } else if (data.type === 'message') {
+      document.getElementById('plan-content').innerHTML = `
+        <div class="empty-plan"><p>${data.answer}</p></div>`
+    }
   } catch (err) {
     document.getElementById('plan-content').innerHTML = `
       <div class="empty-plan"><p>生成失败：${err.message}</p></div>`
   }
 
   btn.disabled = false; btn.textContent = '生成计划'
-}
-
-async function writeToPlan() {
-  if (!currentPlan) return
-  const events = currentPlan.events.filter(e => e.load_target > 0)
-  if (!events.length) { showToast('没有需要写入的训练日'); return }
-
-  try {
-    const res = await fetch(`${API}/plan/create`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ events })
-    })
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const data = await res.json()
-    showToast(`✅ 已写入 ${data.created} 个训练到 Intervals 日历`)
-  } catch (err) {
-    showToast(`❌ 写入失败：${err.message}`)
-  }
 }
 </script>
 </body>
