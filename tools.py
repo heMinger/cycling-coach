@@ -113,6 +113,34 @@ def get_full_context() -> str:
     return context + memory_section
 
 
+# ── 模块级 Embedding + Vectorstore 单例（避免每次调用重新加载模型）──
+
+def _get_vectorstore():
+    """懒加载并缓存 embedding 模型和向量库，整个进程只初始化一次。"""
+    if _get_vectorstore._instance is None:
+        from langchain_huggingface import HuggingFaceEmbeddings
+        from langchain_chroma import Chroma
+        embeddings = HuggingFaceEmbeddings(
+            model_name="BAAI/bge-small-zh-v1.5",
+            model_kwargs={"device": "cpu"},
+            encode_kwargs={"normalize_embeddings": True},
+        )
+        _get_vectorstore._instance = Chroma(
+            persist_directory="./chroma_db",
+            embedding_function=embeddings,
+        )
+    return _get_vectorstore._instance
+
+_get_vectorstore._instance = None
+
+# L2 距离阈值：超过此值的 chunk 视为无关，不纳入上下文
+# 基于 Layer 3 阈值扫描（k=5）：0.85 是 precision/recall 最优平衡点
+#   0.80 → precision=0.72 但 recall 掉到 0.90（有效 chunk 被过滤）
+#   0.85 → precision=0.65，recall=1.0，avg_hits≈3.1
+#   0.90 → precision=0.56，recall=1.0，avg_hits≈3.9（噪声重新进来）
+_RETRIEVAL_SCORE_THRESHOLD = 0.85
+
+
 # ── Tool 2: search_knowledge ──────────────────────────────────
 
 @tool
@@ -126,15 +154,12 @@ def search_knowledge(query: str) -> str:
 
     参数 query：简洁检索词，如「Z2训练功率范围」「TSB负值意味着什么」。
     """
-    from langchain_huggingface import HuggingFaceEmbeddings
-    from langchain_chroma import Chroma
-    embeddings = HuggingFaceEmbeddings(
-        model_name="BAAI/bge-small-zh-v1.5",
-        model_kwargs={"device": "cpu"},
-        encode_kwargs={"normalize_embeddings": True},
-    )
-    vectorstore = Chroma(persist_directory="./chroma_db", embedding_function=embeddings)
-    docs = vectorstore.similarity_search(query, k=3)
+    vectorstore = _get_vectorstore()
+    results = vectorstore.similarity_search_with_score(query, k=5)
+    docs = [doc for doc, score in results if score < _RETRIEVAL_SCORE_THRESHOLD]
+    if not docs:
+        # 全部低于阈值说明 query 超出知识库范围，明确告知 LLM 而非塞噪声
+        return "知识库中未找到与此问题相关的内容。若为通用骑行知识请基于专业判断作答，若涉及用户个人数据请改用 get_full_context。"
     return "\n\n---\n\n".join(doc.page_content for doc in docs)
 
 

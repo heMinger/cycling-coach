@@ -13,16 +13,13 @@ import json
 load_dotenv()
 
 # ── 第一步：加载文档 ──────────────────────────────────────────
-def load_documents(knowledge_dir="data/knowledge", user_dir="data/user_data"):
-    loader_knowledge = DirectoryLoader(
+def load_documents(knowledge_dir="data/knowledge"):
+    # user_data 由 _fetch_context() 实时拉取，不进入静态向量库
+    loader = DirectoryLoader(
         knowledge_dir, glob="**/*.md", loader_cls=TextLoader,
         loader_kwargs={"encoding": "utf-8"}
     )
-    loader_user = DirectoryLoader(
-        user_dir, glob="**/*.md", loader_cls=TextLoader,
-        loader_kwargs={"encoding": "utf-8"}
-    )
-    docs = loader_knowledge.load() + loader_user.load()
+    docs = loader.load()
     print(f"加载文档数：{len(docs)}")
     return docs
 
@@ -41,13 +38,38 @@ def build_vectorstore(chunks):
         model_kwargs={"device": "cpu"},
         encode_kwargs={"normalize_embeddings": True}
     )
-    vectorstore = Chroma.from_documents(
-        documents=chunks,
-        embedding=embeddings,
-        persist_directory="./chroma_db"
-    )
-    print("向量库构建完成")
+    
+    # 如果向量库已存在，直接加载，不重新构建
+    if os.path.exists("./chroma_db"):
+        print("加载已有向量库...")
+        vectorstore = Chroma(
+            persist_directory="./chroma_db",
+            embedding_function=embeddings
+        )
+    else:
+        print("构建新向量库...")
+        vectorstore = Chroma.from_documents(
+            documents=chunks,
+            embedding=embeddings,
+            persist_directory="./chroma_db"
+        )
+    
+    print("向量库就绪")
     return vectorstore
+# def build_vectorstore(chunks):
+#     print("正在加载 Embedding 模型...")
+#     embeddings = HuggingFaceEmbeddings(
+#         model_name="BAAI/bge-small-zh-v1.5",
+#         model_kwargs={"device": "cpu"},
+#         encode_kwargs={"normalize_embeddings": True}
+#     )
+#     vectorstore = Chroma.from_documents(
+#         documents=chunks,
+#         embedding=embeddings,
+#         persist_directory="./chroma_db"
+#     )
+#     print("向量库构建完成")
+#     return vectorstore
 
 # ── 公共：获取用户数据 ────────────────────────────────────────
 def get_user_profile(_):

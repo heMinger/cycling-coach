@@ -299,7 +299,8 @@ def extract_memories(messages: list, session_id: str):
         response = client.chat.completions.create(
             model="deepseek-chat",
             messages=[{"role": "user", "content": prompt}],
-            max_tokens=500
+            max_tokens=500,
+            temperature=0,
         )
         raw = response.choices[0].message.content.strip()
 

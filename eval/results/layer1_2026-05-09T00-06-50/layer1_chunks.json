@@ -1,0 +1,208 @@
+{
+  "layer": 1,
+  "name": "chunks",
+  "passed": true,
+  "score": 0.6,
+  "items": [
+    {
+      "id": "1",
+      "name": "chunk_visualization",
+      "status": "pass",
+      "detail": {
+        "total_docs": 4,
+        "total_chunks": 11,
+        "sources": [
+          "ftp_and_metrics.md",
+          "recovery_and_adaptation.md",
+          "training_zones.md",
+          "user_profile.md"
+        ]
+      }
+    },
+    {
+      "id": "2",
+      "name": "chunk_size_appropriateness",
+      "status": "pass",
+      "detail": {
+        "chunk_size_setting": 500,
+        "chunks_over_480": 0,
+        "over_480_ids": [],
+        "note": "超过480字的chunk存在在语义中间被截断的风险"
+      }
+    },
+    {
+      "id": "3",
+      "name": "chunk_overlap_check",
+      "status": "warn",
+      "detail": {
+        "chunk_overlap_setting": 50,
+        "adjacent_pairs_checked": 7,
+        "pairs_with_overlap_found": 0,
+        "samples": [
+          {
+            "chunk_ids": [
+              0,
+              1
+            ],
+            "source": "training_zones.md",
+            "overlap_found": false,
+            "tail_sample": "6 | 无氧能力 | >121% | 不适用 | 短时爆发，",
+            "head_sample": "## 训练区间的实际应用\n\n**Z2 训练**是耐力运动员的"
+          },
+          {
+            "chunk_ids": [
+              2,
+              3
+            ],
+            "source": "ftp_and_metrics.md",
+            "overlap_found": false,
+            "tail_sample": "**公式**：TSS = (时长秒 × NP × IF) /",
+            "head_sample": "**参考值**：\n- <150：恢复快，次日可正常训练\n- "
+          },
+          {
+            "chunk_ids": [
+              3,
+              4
+            ],
+            "source": "ftp_and_metrics.md",
+            "overlap_found": false,
+            "tail_sample": "下能输出更高功率，说明有氧能力提升。\n同一运动员在相似条件下",
+            "head_sample": "---\n\n## HRV（心率变异性，Heart Rate V"
+          },
+          {
+            "chunk_ids": [
+              5,
+              6
+            ],
+            "source": "recovery_and_adaptation.md",
+            "overlap_found": false,
+            "tail_sample": "量降至正常的 40-60%，持续1周\n- 严重：停训2周以上",
+            "head_sample": "---\n\n## 恢复策略\n\n**训练后即时恢复（0-30分钟"
+          },
+          {
+            "chunk_ids": [
+              7,
+              8
+            ],
+            "source": "user_profile.md",
+            "overlap_found": false,
+            "tail_sample": "### 第11周（3/9 - 3/15）｜周总负荷：691｜",
+            "head_sample": "| 日期 | 类型 | 时长 | 均功率 | 均心率 | 负"
+          }
+        ],
+        "note": "overlap_found=0 说明切分点刚好不在overlap范围内，不一定是问题"
+      }
+    },
+    {
+      "id": "4",
+      "name": "length_distribution",
+      "status": "warn",
+      "detail": {
+        "min_chars": 97,
+        "max_chars": 478,
+        "avg_chars": 393.8,
+        "distribution": {
+          "<100": 1,
+          "100-299": 0,
+          "300-499": 10,
+          ">=500": 0
+        },
+        "short_chunk_ids": [
+          4
+        ]
+      }
+    },
+    {
+      "id": "5",
+      "name": "table_integrity",
+      "status": "pass",
+      "detail": {
+        "intact": 6,
+        "header_only": 0,
+        "data_only": 0,
+        "broken_chunk_ids": []
+      }
+    }
+  ],
+  "errors": [],
+  "duration_s": 40.14,
+  "_chunk_contents": [
+    {
+      "id": 0,
+      "source": "training_zones.md",
+      "char_count": 440,
+      "table_status": "intact",
+      "content": "# 功率训练区间（Power Training Zones）\n\n基于 FTP（功能性阈值功率）的六区间划分：\n\n| 区间 | 名称 | %FTP | 心率参考 | 训练目的 |\n|------|------|------|---------|---------|\n| Z1 | 主动恢复 | <55% | <68%HRmax | 促进恢复，不产生训练刺激 |\n| Z2 | 有氧耐力 | 56-75% | 69-83%HRmax | 建立有氧基础，提升脂肪代谢 |\n| Z3 | 节奏骑行 | 76-90% | 84-94%HRmax | 提高持续输出能力 |\n| Z4 | 乳酸阈值 | 91-105% | 95-105%HRmax | 提升 FTP，推高乳酸阈值 |\n| Z5 | 最大摄氧量 | 106-120% | >106%HRmax | 提升 VO2max |\n| Z6 | 无氧能力 | >121% | 不适用 | 短时爆发，冲刺能力 |\n\n## 训练区间的实际应用"
+    },
+    {
+      "id": 1,
+      "source": "training_zones.md",
+      "char_count": 348,
+      "table_status": "no_table",
+      "content": "## 训练区间的实际应用\n\n**Z2 训练**是耐力运动员的基础，建议占总训练量的 70-80%。\n长时间 Z2 训练能提升线粒体密度和毛细血管网络，是提升有氧能力的核心手段。\n\n**Z4 训练**是提升 FTP 的直接手段，典型组合：\n- 甜蜜点训练（Sweet Spot）：88-93% FTP，30-60分钟持续\n- 阈值间歇：95-105% FTP，2×20分钟，间歇5分钟\n\n**Z5 训练**强度高，恢复需求大，每周不超过2次，每次总时长不超过30分钟。\n\n## 心率区间\n\n心率受多种因素影响（疲劳、温度、咖啡因），滞后于功率约30-60秒。\n建议以功率为主要控制指标，心率作为辅助参考。\n\n最大心率估算：220 - 年龄（粗略估算，个体差异大）\n建议通过场地测试获取真实最大心率。"
+    },
+    {
+      "id": 2,
+      "source": "ftp_and_metrics.md",
+      "char_count": 468,
+      "table_status": "intact",
+      "content": "# 核心训练指标\n\n## FTP（功能性阈值功率，Functional Threshold Power）\n\n**定义**：骑手在1小时内能维持的最大平均功率，单位瓦特（W）。\n是所有功率训练区间的计算基础。\n\n**测试方法**：\n- 20分钟全力测试：取平均功率 × 0.95 = FTP\n- 8分钟测试：取平均功率 × 0.90 = FTP\n- Ramp Test：逐级递增功率至力竭，取最后完成阶段功率 × 0.75\n\n**参考水平**（W/kg，功率体重比）：\n| 水平 | 男性 | 女性 |\n|------|------|------|\n| 入门 | 2.0-2.5 | 1.5-2.0 |\n| 业余 | 2.5-3.5 | 2.0-3.0 |\n| 竞技 | 3.5-4.5 | 3.0-4.0 |\n| 精英 | >4.5 | >4.0 |\n\n---\n\n## TSS（训练压力分，Training Stress Score）\n\n**公式**：TSS = (时长秒 × NP × IF) / (FTP × 3600) × 100"
+    },
+    {
+      "id": 3,
+      "source": "ftp_and_metrics.md",
+      "char_count": 464,
+      "table_status": "no_table",
+      "content": "**参考值**：\n- <150：恢复快，次日可正常训练\n- 150-300：中等疲劳，需1-2天恢复\n- 300-450：高强度，需2-3天恢复\n- >450：极高，需要数天充分恢复\n\n---\n\n## IF（强度因子，Intensity Factor）\n\n**公式**：IF = NP / FTP\n\n**含义**：\n- IF 0.65-0.75：轻松长距离骑行\n- IF 0.75-0.85：节奏训练\n- IF 0.85-0.95：竞速/阈值训练\n- IF >1.05：短时间高强度\n\n---\n\n## NP（标准化功率，Normalized Power）\n\n考虑了功率波动对身体的实际消耗，比平均功率更能反映真实训练负荷。\n平坦路面 NP ≈ 平均功率，起伏路面 NP > 平均功率。\n\n---\n\n## EF（效率因子，Efficiency Factor）\n\n**公式**：EF = NP / 平均心率\n\n反映心肺效率。同等心率下能输出更高功率，说明有氧能力提升。\n同一运动员在相似条件下，EF 随训练水平提升而升高。\n\n---"
+    },
+    {
+      "id": 4,
+      "source": "ftp_and_metrics.md",
+      "char_count": 97,
+      "table_status": "no_table",
+      "content": "---\n\n## HRV（心率变异性，Heart Rate Variability）\n\n反映自主神经系统状态，间接衡量恢复程度。\n每日晨起测量，HRV 下降超过基准值 20% 以上，建议减量训练。"
+    },
+    {
+      "id": 5,
+      "source": "recovery_and_adaptation.md",
+      "char_count": 437,
+      "table_status": "no_table",
+      "content": "# 恢复与训练适应\n\n## 超量恢复原理\n\n训练本质是施加压力 → 破坏稳态 → 恢复期超量补偿 → 能力提升。\n关键：**压力和恢复必须匹配**，只有压力没有恢复 = 过度训练。\n\n训练适应时间线：\n- 神经适应：1-2周\n- 肌肉适应：4-6周\n- 心肺适应：6-8周\n- 代谢适应（线粒体密度）：8-12周\n\n---\n\n## 过度训练的信号\n\n**早期信号（可通过调整恢复）**：\n- 晨起静息心率持续高于基准 5bpm 以上\n- HRV 持续低于个人基准\n- 相同功率下心率偏高（EF 下降）\n- 睡眠质量下降、入睡困难\n\n**中期信号（需要主动减量）**：\n- 训练表现停滞或下降超过2周\n- 持续性肌肉沉重感\n- 情绪低落、对训练失去动力\n- 免疫力下降（频繁感冒）\n\n**处理方式**：\n- 早期：插入1-2天 Z1 主动恢复或完全休息\n- 中期：减量周，训练量降至正常的 40-60%，持续1周\n- 严重：停训2周以上，必要时就医\n\n---\n\n## 恢复策略"
+    },
+    {
+      "id": 6,
+      "source": "recovery_and_adaptation.md",
+      "char_count": 330,
+      "table_status": "no_table",
+      "content": "---\n\n## 恢复策略\n\n**训练后即时恢复（0-30分钟）**：\n- 补充碳水 + 蛋白质（比例约 3:1）\n- 示例：500ml 巧克力牛奶，或米饭 + 鸡胸肉\n\n**睡眠**：\n- 最重要的恢复手段，成年运动员建议 8-9 小时\n- 深度睡眠期间生长激素分泌峰值\n\n**主动恢复**：\n- Z1 轻松骑行 30-45 分钟，促进血液循环，加速代谢废物清除\n- 优于完全静止休息\n\n---\n\n## 训练周期化\n\n**微周期（1周）**：3-4天训练 + 1-2天恢复\n**中周期（4周）**：3周递增负荷 + 1周减量（负荷降至60-70%）\n**宏周期（3-6个月）**：基础期 → 进阶期 → 赛前期 → 恢复期\n\n减量周不是偷懒，是适应发生的时间。"
+    },
+    {
+      "id": 7,
+      "source": "user_profile.md",
+      "char_count": 478,
+      "table_status": "intact",
+      "content": "# 用户训练档案\n\n## 基本信息\n- 姓名：\n- 性别：\n- 年龄：\n- 体重：\n- FTP：\n- 最大心率：\n- 静息心率基准：\n\n## 近四周训练记录\n\n### 第10周（3/2 - 3/8）｜周总负荷：453｜总时长：7h30m｜总距离：207km\n\n| 日期 | 类型 | 时长 | 均功率 | 均心率 | 负荷 | 备注 |\n|------|------|------|--------|--------|------|------|\n| 3/2 周一 |  |  |  |  |  |  |\n| 3/3 周二 |  |  |  |  |  |  |\n| 3/4 周三 |  |  |  |  |  |  |\n| 3/5 周四 |  |  |  |  |  |  |\n| 3/6 周五 |  |  |  |  |  |  |\n| 3/7 周六 |  |  |  |  |  |  |\n| 3/8 周日 |  |  |  |  |  |  |\n\n### 第11周（3/9 - 3/15）｜周总负荷：691｜总时长：14h48m｜总距离：283km"
+    },
+    {
+      "id": 8,
+      "source": "user_profile.md",
+      "char_count": 353,
+      "table_status": "intact",
+      "content": "| 日期 | 类型 | 时长 | 均功率 | 均心率 | 负荷 | 备注 |\n|------|------|------|--------|--------|------|------|\n| 3/9 周一 |  |  |  |  |  |  |\n| 3/10 周二 |  |  |  |  |  |  |\n| 3/11 周三 |  |  |  |  |  |  |\n| 3/12 周四 |  |  |  |  |  |  |\n| 3/13 周五 |  |  |  |  |  |  |\n| 3/14 周六 |  |  |  |  |  |  |\n| 3/15 周日 |  |  |  |  |  |  |\n\n### 第12周（3/16 - 3/22）｜周总负荷：486｜总时长：8h4m｜总距离：210km"
+    },
+    {
+      "id": 9,
+      "source": "user_profile.md",
+      "char_count": 463,
+      "table_status": "intact",
+      "content": "| 日期 | 类型 | 时长 | 均功率 | 均心率 | 负荷 | 备注 |\n|------|------|------|--------|--------|------|------|\n| 3/16 周一 |  |  |  |  |  |  |\n| 3/17 周二 |  |  |  |  |  |  |\n| 3/18 周三 |  |  |  |  |  |  |\n| 3/19 周四 |  |  |  |  |  |  |\n| 3/20 周五 |  |  |  |  |  |  |\n| 3/21 周六 |  |  |  |  |  |  |\n| 3/22 周日 |  |  |  |  |  |  |\n\n### 第13周（3/23，本周）｜周总负荷：84（截至今日）\n\n| 日期 | 类型 | 时长 | 均功率 | 均心率 | 负荷 | 备注 |\n|------|------|------|--------|--------|------|------|\n| |  |  |  |  |  |  |\n\n## 近四周汇总"
+    },
+    {
+      "id": 10,
+      "source": "user_profile.md",
+      "char_count": 454,
+      "table_status": "intact",
+      "content": "## 近四周汇总\n\n| 周次 | 总时长 | 总距离 | 周负荷TSS | 备注 |\n|------|--------|--------|-----------|------|\n| 第10周 | 7h30m | 207km | 453 | 正常训练周 |\n| 第11周 | 14h48m | 283km | 691 | 高负荷周，含超长赛事模拟 |\n| 第12周 | 8h4m | 210km | 486 | 中高负荷，赛前周 |\n| 第13周 | 1h24m | 37km | 84 | 本周刚开始 |\n| **四周合计** | **31h46m** | **737km** | **1714** | |\n\n## 当前训练状态分析\n\n- 健康度：\n- 疲劳度：\n- 状态值：\n- 变化率：\n\n## 注意事项\n\n- 第11周单周691 TSS属于高强度大周，超过一般训练周建议上限（400-500）\n- 第12周多个课程未完成（0%），可能存在疲劳积累导致执行力下降\n- 状态值持续为负，建议密切关注恢复质量"
+    }
+  ]
+}

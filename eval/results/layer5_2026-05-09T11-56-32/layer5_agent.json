@@ -1,0 +1,449 @@
+{
+  "layer": 5,
+  "name": "agent",
+  "passed": false,
+  "score": 0.38,
+  "items": [
+    {
+      "id": "22",
+      "name": "tool_selection_accuracy",
+      "status": "fail",
+      "detail": {
+        "cases_passed": 8,
+        "total": 15,
+        "avg_recall": 0.6,
+        "per_case": [
+          {
+            "id": "ts01",
+            "query": "Z2训练的功率范围是多少",
+            "expected": [
+              "search_knowledge"
+            ],
+            "actual": [],
+            "missed": [
+              "search_knowledge"
+            ],
+            "anti_triggered": [],
+            "precision": 0.0,
+            "recall": 0.0,
+            "misuse": false,
+            "status": "fail",
+            "response_preview": "Z2（有氧耐力区间）的功率范围是 FTP 的 56%-75%。\n\n具体细分：Z2 下限 56% FTP，上限 75% FTP。比如你 FTP 是 200W，那 "
+          },
+          {
+            "id": "ts02",
+            "query": "什么是甜蜜点训练",
+            "expected": [
+              "search_knowledge"
+            ],
+            "actual": [],
+            "missed": [
+              "search_knowledge"
+            ],
+            "anti_triggered": [],
+            "precision": 0.0,
+            "recall": 0.0,
+            "misuse": false,
+            "status": "fail",
+            "response_preview": "甜蜜点训练（Sweet Spot Training）指功率区间在 FTP 的 88%-94%。这个强度介于 Z3 和 Z4 之间，核心价值是：用比 Z4 更低的"
+          },
+          {
+            "id": "ts03",
+            "query": "过度训练有哪些早期信号",
+            "expected": [
+              "search_knowledge"
+            ],
+            "actual": [
+              "search_knowledge"
+            ],
+            "missed": [],
+            "anti_triggered": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "misuse": false,
+            "status": "pass",
+            "response_preview": "过度训练早期信号，说几个最直接的：\n\n1. 晨起静息心率持续比基准高 5bpm 以上——这是最客观的指标，每天早上起床前测。\n2. HRV 持续低于个人基准，说"
+          },
+          {
+            "id": "ts04",
+            "query": "FTP测试方法有哪些",
+            "expected": [
+              "search_knowledge"
+            ],
+            "actual": [],
+            "missed": [
+              "search_knowledge"
+            ],
+            "anti_triggered": [],
+            "precision": 0.0,
+            "recall": 0.0,
+            "misuse": false,
+            "status": "fail",
+            "response_preview": "FTP测试主要有三种公认方法：\n\n1. 20分钟测试（最常用）：先全力骑5分钟热身，休息10分钟，再全力骑20分钟。平均功率×0.95就是你的FTP。\n\n2. "
+          },
+          {
+            "id": "ts05",
+            "query": "TSS超过400意味着什么",
+            "expected": [
+              "search_knowledge"
+            ],
+            "actual": [
+              "search_knowledge",
+              "get_full_context"
+            ],
+            "missed": [],
+            "anti_triggered": [
+              "get_full_context"
+            ],
+            "precision": 0.5,
+            "recall": 1.0,
+            "misuse": true,
+            "status": "fail",
+            "response_preview": "先说通用结论，再结合你的情况。\n\n单次骑行TSS超过400，意味着这是一次极高强度的训练，根据参考值，需要2-3天甚至更久才能完全恢复。通常只有职业车手在长距离"
+          },
+          {
+            "id": "ts06",
+            "query": "我今天的训练状态怎么样",
+            "expected": [
+              "get_full_context"
+            ],
+            "actual": [
+              "get_full_context"
+            ],
+            "missed": [],
+            "anti_triggered": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "misuse": false,
+            "status": "pass",
+            "response_preview": "当前状态：CTL 67.3，ATL 94.0，TSB -26.6。\n\nTSB -26.6，你已经进入深度疲劳区。正常恢复区间是-10到+10，低于-20意味着积"
+          },
+          {
+            "id": "ts07",
+            "query": "我最近的CTL是多少",
+            "expected": [
+              "get_full_context"
+            ],
+            "actual": [
+              "get_full_context"
+            ],
+            "missed": [],
+            "anti_triggered": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "misuse": false,
+            "status": "pass",
+            "response_preview": "当前CTL是67.3，ATL 93.96，TSB -26.6。TSB已经低于-20，属于深度疲劳区间，你最近训练量堆得比较猛，ATL比CTL高出一截，身体恢复压"
+          },
+          {
+            "id": "ts08",
+            "query": "我现在适合高强度训练吗",
+            "expected": [
+              "get_full_context"
+            ],
+            "actual": [
+              "get_full_context"
+            ],
+            "missed": [],
+            "anti_triggered": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "misuse": false,
+            "status": "pass",
+            "response_preview": "不适合。你现在TSB -26.6，处于深度疲劳状态。CTL 67.4，ATL 93.9，疲劳远高于体能储备，这是典型的过度累积信号。高强度训练在这种状态下收益极"
+          },
+          {
+            "id": "ts09",
+            "query": "我上周训练了多少小时",
+            "expected": [
+              "get_full_context"
+            ],
+            "actual": [
+              "get_full_context"
+            ],
+            "missed": [],
+            "anti_triggered": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "misuse": false,
+            "status": "pass",
+            "response_preview": "上周（4月28日-5月4日）你的训练时长如下：\n\n4/28 休息\n4/29 85分钟\n4/30 休息\n5/1 211分钟（4段骑行合计）\n5/2 122分钟\n5"
+          },
+          {
+            "id": "ts10",
+            "query": "帮我制定本周训练计划",
+            "expected": [
+              "analyze_and_plan"
+            ],
+            "actual": [
+              "ask_user",
+              "get_full_context"
+            ],
+            "missed": [
+              "analyze_and_plan"
+            ],
+            "anti_triggered": [],
+            "precision": 0.0,
+            "recall": 0.0,
+            "misuse": false,
+            "status": "fail",
+            "response_preview": "Minghe，你目前状态：CTL 67.4，ATL 94.0，TSB -26.6。TSB低于-20说明你已经处于较深的疲劳积累状态，这周必须降量恢复，不能再堆强"
+          },
+          {
+            "id": "ts11",
+            "query": "我想要一个侧重FTP提升的本周计划",
+            "expected": [
+              "analyze_and_plan"
+            ],
+            "actual": [
+              "ask_user",
+              "get_full_context"
+            ],
+            "missed": [
+              "analyze_and_plan"
+            ],
+            "anti_triggered": [],
+            "precision": 0.0,
+            "recall": 0.0,
+            "misuse": false,
+            "status": "fail",
+            "response_preview": "你的状态很清楚：CTL 67.4，ATL 94.0，TSB -26.6，深度疲劳状态。这个TSB说明你最近训练量不小，身体正在累积疲劳。\n\n先问一句：你这周有没"
+          },
+          {
+            "id": "ts12",
+            "query": "你好，你能做什么",
+            "expected": [],
+            "actual": [],
+            "missed": [],
+            "anti_triggered": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "misuse": false,
+            "status": "pass",
+            "response_preview": "我是公路骑行教练，能帮你做几件事：\n\n1. 查看你的训练状态 — CTL（训练负荷）、ATL（疲劳）、TSB（体能状态），以及近期活动记录。\n2. 制定个性化周"
+          },
+          {
+            "id": "ts13",
+            "query": "帮我生成本周训练计划",
+            "expected": [
+              "analyze_and_plan"
+            ],
+            "actual": [
+              "analyze_and_plan",
+              "get_full_context"
+            ],
+            "missed": [],
+            "anti_triggered": [],
+            "precision": 0.5,
+            "recall": 1.0,
+            "misuse": false,
+            "status": "pass",
+            "response_preview": "当前你的状态：\n\n**CTL 67.4（体能） | ATL 94（疲劳） | TSB -26.6（深度负值）**\n\nTSB低于-20属于过度疲劳区间，本周必须降"
+          },
+          {
+            "id": "ts14",
+            "query": "我想了解我的状态然后制定训练计划",
+            "expected": [
+              "analyze_and_plan",
+              "get_full_context"
+            ],
+            "actual": [
+              "analyze_and_plan",
+              "get_full_context"
+            ],
+            "missed": [],
+            "anti_triggered": [],
+            "precision": 1.0,
+            "recall": 1.0,
+            "misuse": false,
+            "status": "pass",
+            "response_preview": "你的状态总结：\n\nCTL 67.4（训练负荷），ATL 94.0（疲劳积累），TSB -26.6（深度疲劳）。TSB低于-20意味着身体处于过度疲劳区间，本周必"
+          },
+          {
+            "id": "ts15",
+            "query": "Z4阈值间歇的典型训练结构是什么",
+            "expected": [
+              "search_knowledge"
+            ],
+            "actual": [],
+            "missed": [
+              "search_knowledge"
+            ],
+            "anti_triggered": [],
+            "precision": 0.0,
+            "recall": 0.0,
+            "misuse": false,
+            "status": "fail",
+            "response_preview": "Z4阈值间歇的典型结构：先充分热身20-30分钟。主课：3-5组 x 8-12分钟，功率在FTP的95-105%，组间休息3-5分钟（踩放松）。冷身10分钟。\n"
+          }
+        ]
+      }
+    },
+    {
+      "id": "23",
+      "name": "tool_misuse_detection",
+      "status": "fail",
+      "detail": {
+        "misuse_count": 1,
+        "total": 15,
+        "misuse_cases": [
+          {
+            "id": "ts05",
+            "query": "TSS超过400意味着什么",
+            "expected": [
+              "search_knowledge"
+            ],
+            "actual": [
+              "search_knowledge",
+              "get_full_context"
+            ],
+            "missed": [],
+            "anti_triggered": [
+              "get_full_context"
+            ],
+            "precision": 0.5,
+            "recall": 1.0,
+            "misuse": true,
+            "status": "fail",
+            "response_preview": "先说通用结论，再结合你的情况。\n\n单次骑行TSS超过400，意味着这是一次极高强度的训练，根据参考值，需要2-3天甚至更久才能完全恢复。通常只有职业车手在长距离"
+          }
+        ]
+      }
+    },
+    {
+      "id": "24",
+      "name": "double_api_call",
+      "status": "fail",
+      "detail": {
+        "plan_cases_tested": 4,
+        "double_call_count": 2,
+        "per_case": [
+          {
+            "id": "ts10",
+            "query": "帮我制定本周训练计划",
+            "tool_sequence": [
+              "get_full_context"
+            ],
+            "double_call": false
+          },
+          {
+            "id": "ts11",
+            "query": "我想要一个侧重FTP提升的本周计划",
+            "tool_sequence": [
+              "get_full_context",
+              "analyze_and_plan"
+            ],
+            "double_call": true
+          },
+          {
+            "id": "ts13",
+            "query": "帮我生成本周训练计划",
+            "tool_sequence": [
+              "get_full_context"
+            ],
+            "double_call": false
+          },
+          {
+            "id": "ts14",
+            "query": "我想了解我的状态然后制定训练计划",
+            "tool_sequence": [
+              "get_full_context",
+              "analyze_and_plan"
+            ],
+            "double_call": true
+          }
+        ]
+      }
+    },
+    {
+      "id": "25",
+      "name": "interrupt_flow",
+      "status": "warn",
+      "detail": {
+        "branches": [
+          {
+            "branch": "confirm",
+            "plan_generated": true,
+            "interrupted_after_confirm": false,
+            "final_response": ""
+          },
+          {
+            "branch": "cancel",
+            "plan_generated": true,
+            "cancel_response": "未触发 interrupt，无法测试取消分支",
+            "correctly_cancelled": null
+          }
+        ]
+      }
+    },
+    {
+      "id": "26",
+      "name": "tool_call_count_limit",
+      "status": "pass",
+      "detail": {
+        "injected_count": 7,
+        "trigger_question": "我今天状态怎么样",
+        "response": "工具调用次数超限，请重新开始对话",
+        "limit_triggered": true
+      }
+    },
+    {
+      "id": "27",
+      "name": "auto_memory",
+      "status": "pass",
+      "detail": {
+        "extracted_memories": [
+          {
+            "category": "injury",
+            "content": "左膝盖下坡时疼痛"
+          }
+        ],
+        "injury_count": 1,
+        "knee_captured": true
+      }
+    },
+    {
+      "id": "28",
+      "name": "session_isolation",
+      "status": "pass",
+      "detail": {
+        "session_a": {
+          "has_plan": false,
+          "tool_call_count": 2
+        },
+        "session_b": {
+          "has_plan": false,
+          "tool_call_count": 0
+        },
+        "plan_isolated": true,
+        "count_isolated": true
+      }
+    },
+    {
+      "id": "29",
+      "name": "fallback_path",
+      "status": "fail",
+      "detail": {
+        "scenarios": [
+          {
+            "scenario": "api_fail",
+            "cache_available": true,
+            "static_available": true,
+            "got_content": true,
+            "content_preview": "## 基本信息\n- 姓名：Minghe，女，23岁，体重63kg\n- FTP：202W，最大心率：194bpm\n\n## 训练目标\n- 截止：2026年6月15日",
+            "passed": true
+          },
+          {
+            "scenario": "api_and_cache_fail",
+            "expected": "static profile",
+            "got_content": false,
+            "content_preview": "maximum recursion depth exceeded",
+            "passed": false
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [],
+  "duration_s": 296.13
+}

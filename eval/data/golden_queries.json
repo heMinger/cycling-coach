@@ -1,0 +1,146 @@
+[
+  {
+    "id": "q01",
+    "query": "Z2训练的功率范围是多少",
+    "category": "in_scope",
+    "expected_sources": ["training_zones.md"],
+    "expected_keywords": ["56-75%", "有氧耐力"],
+    "notes": "最基础的区间定义，表格数据，高频问题"
+  },
+  {
+    "id": "q02",
+    "query": "甜蜜点训练的功率区间是多少",
+    "category": "in_scope",
+    "expected_sources": ["training_zones.md"],
+    "expected_keywords": ["Sweet Spot", "88-93%", "FTP"],
+    "notes": "Z4 小节的具体训练描述"
+  },
+  {
+    "id": "q03",
+    "query": "Z5训练每周最多做几次，每次多长时间",
+    "category": "in_scope",
+    "expected_sources": ["training_zones.md"],
+    "expected_keywords": ["2次", "30分钟", "Z5"],
+    "notes": "频率限制，容易被问到"
+  },
+  {
+    "id": "q04",
+    "query": "心率相比功率作为训练指标有什么局限性",
+    "category": "in_scope",
+    "expected_sources": ["training_zones.md"],
+    "expected_keywords": ["滞后", "30-60秒", "功率为主"],
+    "notes": "心率滞后问题，常见知识点"
+  },
+  {
+    "id": "q05",
+    "query": "Z4阈值间歇的典型训练结构",
+    "category": "in_scope",
+    "expected_sources": ["training_zones.md"],
+    "expected_keywords": ["95-105%", "2×20分钟", "间歇"],
+    "notes": "具体训练组合，计划生成时经常引用"
+  },
+  {
+    "id": "q06",
+    "query": "FTP有哪些测试方法",
+    "category": "in_scope",
+    "expected_sources": ["ftp_and_metrics.md"],
+    "expected_keywords": ["20分钟", "0.95", "Ramp Test"],
+    "notes": "测试方法是核心知识，多种方法"
+  },
+  {
+    "id": "q07",
+    "query": "TSS超过300需要恢复几天",
+    "category": "in_scope",
+    "expected_sources": ["ftp_and_metrics.md"],
+    "expected_keywords": ["150-300", "300-450", "恢复"],
+    "notes": "TSS参考值，直接影响计划建议"
+  },
+  {
+    "id": "q08",
+    "query": "IF 0.9对应什么训练强度",
+    "category": "in_scope",
+    "expected_sources": ["ftp_and_metrics.md"],
+    "expected_keywords": ["0.85-0.95", "竞速", "阈值"],
+    "notes": "IF区间解读"
+  },
+  {
+    "id": "q09",
+    "query": "NP和平均功率有什么区别",
+    "category": "in_scope",
+    "expected_sources": ["ftp_and_metrics.md"],
+    "expected_keywords": ["标准化功率", "波动", "起伏路面"],
+    "notes": "NP定义，经常混淆的概念"
+  },
+  {
+    "id": "q10",
+    "query": "EF效率因子下降说明什么",
+    "category": "in_scope",
+    "expected_sources": ["ftp_and_metrics.md"],
+    "expected_keywords": ["EF", "心率", "有氧能力"],
+    "notes": "EF趋势解读，与疲劳相关"
+  },
+  {
+    "id": "q11",
+    "query": "过度训练有哪些早期信号",
+    "category": "in_scope",
+    "expected_sources": ["recovery_and_adaptation.md"],
+    "expected_keywords": ["静息心率", "5bpm", "HRV"],
+    "notes": "过度训练早期识别，安全关键"
+  },
+  {
+    "id": "q12",
+    "query": "减量周训练量应该降到多少",
+    "category": "in_scope",
+    "expected_sources": ["recovery_and_adaptation.md"],
+    "expected_keywords": ["40-60%", "60-70%", "减量"],
+    "notes": "减量周标准，周期化核心"
+  },
+  {
+    "id": "q13",
+    "query": "训练后多长时间内补充营养效果最好",
+    "category": "in_scope",
+    "expected_sources": ["recovery_and_adaptation.md"],
+    "expected_keywords": ["0-30分钟", "碳水", "蛋白质"],
+    "notes": "训练后即时恢复窗口"
+  },
+  {
+    "id": "q14",
+    "query": "有氧能力的适应大概需要多少周",
+    "category": "in_scope",
+    "expected_sources": ["recovery_and_adaptation.md"],
+    "expected_keywords": ["6-8周", "心肺适应"],
+    "notes": "适应时间线，帮助设置期望"
+  },
+  {
+    "id": "q15",
+    "query": "TSB是负值说明什么，适合什么训练",
+    "category": "in_scope_multi",
+    "expected_sources": ["ftp_and_metrics.md", "recovery_and_adaptation.md"],
+    "expected_keywords": ["TSB", "疲劳", "恢复"],
+    "notes": "跨chunk问题：TSB定义在ftp文件，恢复建议在recovery文件，测试多跳检索"
+  },
+  {
+    "id": "q16",
+    "query": "我昨天骑行的TSB是多少",
+    "category": "out_of_scope",
+    "expected_sources": [],
+    "expected_keywords": [],
+    "notes": "个人实时数据，知识库没有，应由get_full_context处理；测试边界召回"
+  },
+  {
+    "id": "q17",
+    "query": "骑行期间每小时应该摄入多少克碳水化合物",
+    "category": "out_of_scope",
+    "expected_sources": [],
+    "expected_keywords": [],
+    "notes": "营养细节超出知识库范围，测试是否乱召回"
+  },
+  {
+    "id": "q18",
+    "query": "怎么选择公路车车架尺寸",
+    "category": "out_of_scope",
+    "expected_sources": [],
+    "expected_keywords": [],
+    "notes": "装备问题，完全超出知识库，测试无关召回"
+  }
+]

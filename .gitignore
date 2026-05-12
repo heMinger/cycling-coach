@@ -7,3 +7,4 @@ cache/
 agent_checkpoints.db
 agent_checkpoints.db-shm
 agent_checkpoints.db-wal
+eval/results/eval_checkpoints.db

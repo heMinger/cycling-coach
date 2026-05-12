@@ -1,0 +1,887 @@
+{
+  "layer": 3,
+  "name": "retrieval",
+  "passed": false,
+  "score": 0.83,
+  "items": [
+    {
+      "id": "10",
+      "name": "golden_query_set",
+      "status": "pass",
+      "detail": {
+        "total_queries": 18,
+        "by_category": {
+          "in_scope": 14,
+          "in_scope_multi": 1,
+          "out_of_scope": 3
+        },
+        "query_ids": [
+          "q01",
+          "q02",
+          "q03",
+          "q04",
+          "q05",
+          "q06",
+          "q07",
+          "q08",
+          "q09",
+          "q10",
+          "q11",
+          "q12",
+          "q13",
+          "q14",
+          "q15",
+          "q16",
+          "q17",
+          "q18"
+        ]
+      }
+    },
+    {
+      "id": "11",
+      "name": "context_precision_k3",
+      "status": "fail",
+      "detail": {
+        "avg_precision": 0.5778,
+        "threshold": 0.6,
+        "per_query": [
+          {
+            "id": "q01",
+            "query": "Z2训练的功率范围是多少",
+            "precision": 0.3333,
+            "status": "fail"
+          },
+          {
+            "id": "q02",
+            "query": "甜蜜点训练的功率区间是多少",
+            "precision": 1.0,
+            "status": "pass"
+          },
+          {
+            "id": "q03",
+            "query": "Z5训练每周最多做几次，每次多长时间",
+            "precision": 0.6667,
+            "status": "pass"
+          },
+          {
+            "id": "q04",
+            "query": "心率相比功率作为训练指标有什么局限性",
+            "precision": 0.0,
+            "status": "fail"
+          },
+          {
+            "id": "q05",
+            "query": "Z4阈值间歇的典型训练结构",
+            "precision": 0.6667,
+            "status": "pass"
+          },
+          {
+            "id": "q06",
+            "query": "FTP有哪些测试方法",
+            "precision": 0.6667,
+            "status": "pass"
+          },
+          {
+            "id": "q07",
+            "query": "TSS超过300需要恢复几天",
+            "precision": 1.0,
+            "status": "pass"
+          },
+          {
+            "id": "q08",
+            "query": "IF 0.9对应什么训练强度",
+            "precision": 0.6667,
+            "status": "pass"
+          },
+          {
+            "id": "q09",
+            "query": "NP和平均功率有什么区别",
+            "precision": 0.3333,
+            "status": "fail"
+          },
+          {
+            "id": "q10",
+            "query": "EF效率因子下降说明什么",
+            "precision": 1.0,
+            "status": "pass"
+          },
+          {
+            "id": "q11",
+            "query": "过度训练有哪些早期信号",
+            "precision": 0.3333,
+            "status": "fail"
+          },
+          {
+            "id": "q12",
+            "query": "减量周训练量应该降到多少",
+            "precision": 0.6667,
+            "status": "pass"
+          },
+          {
+            "id": "q13",
+            "query": "训练后多长时间内补充营养效果最好",
+            "precision": 0.3333,
+            "status": "fail"
+          },
+          {
+            "id": "q14",
+            "query": "有氧能力的适应大概需要多少周",
+            "precision": 0.3333,
+            "status": "fail"
+          },
+          {
+            "id": "q15",
+            "query": "TSB是负值说明什么，适合什么训练",
+            "precision": 0.6667,
+            "status": "pass"
+          }
+        ]
+      }
+    },
+    {
+      "id": "12",
+      "name": "context_recall_k3",
+      "status": "pass",
+      "detail": {
+        "avg_recall": 0.9667,
+        "threshold": 0.6,
+        "per_query": [
+          {
+            "id": "q01",
+            "query": "Z2训练的功率范围是多少",
+            "recall": 1.0,
+            "status": "fail"
+          },
+          {
+            "id": "q02",
+            "query": "甜蜜点训练的功率区间是多少",
+            "recall": 1.0,
+            "status": "pass"
+          },
+          {
+            "id": "q03",
+            "query": "Z5训练每周最多做几次，每次多长时间",
+            "recall": 1.0,
+            "status": "pass"
+          },
+          {
+            "id": "q04",
+            "query": "心率相比功率作为训练指标有什么局限性",
+            "recall": 1.0,
+            "status": "fail"
+          },
+          {
+            "id": "q05",
+            "query": "Z4阈值间歇的典型训练结构",
+            "recall": 1.0,
+            "status": "pass"
+          },
+          {
+            "id": "q06",
+            "query": "FTP有哪些测试方法",
+            "recall": 1.0,
+            "status": "pass"
+          },
+          {
+            "id": "q07",
+            "query": "TSS超过300需要恢复几天",
+            "recall": 1.0,
+            "status": "pass"
+          },
+          {
+            "id": "q08",
+            "query": "IF 0.9对应什么训练强度",
+            "recall": 1.0,
+            "status": "pass"
+          },
+          {
+            "id": "q09",
+            "query": "NP和平均功率有什么区别",
+            "recall": 1.0,
+            "status": "fail"
+          },
+          {
+            "id": "q10",
+            "query": "EF效率因子下降说明什么",
+            "recall": 1.0,
+            "status": "pass"
+          },
+          {
+            "id": "q11",
+            "query": "过度训练有哪些早期信号",
+            "recall": 1.0,
+            "status": "fail"
+          },
+          {
+            "id": "q12",
+            "query": "减量周训练量应该降到多少",
+            "recall": 1.0,
+            "status": "pass"
+          },
+          {
+            "id": "q13",
+            "query": "训练后多长时间内补充营养效果最好",
+            "recall": 1.0,
+            "status": "fail"
+          },
+          {
+            "id": "q14",
+            "query": "有氧能力的适应大概需要多少周",
+            "recall": 1.0,
+            "status": "fail"
+          },
+          {
+            "id": "q15",
+            "query": "TSB是负值说明什么，适合什么训练",
+            "recall": 0.5,
+            "status": "pass"
+          }
+        ]
+      }
+    },
+    {
+      "id": "13",
+      "name": "boundary_query_test",
+      "status": "pass",
+      "detail": {
+        "out_of_scope_queries": 3,
+        "correctly_rejected": 3,
+        "per_query": [
+          {
+            "id": "q16",
+            "query": "我昨天骑行的TSB是多少",
+            "status": "pass",
+            "top_hit": {
+              "source": "ftp_and_metrics.md",
+              "char_count": 464,
+              "score": 0.926,
+              "content_preview": "**参考值**： - <150：恢复快，次日可正常训练 - 150-300：中等疲劳，需1-2天恢复 - 300-450：高强度，需2-3天恢复 - >450：极高，需要数天充分恢复  ---  ##"
+            }
+          },
+          {
+            "id": "q17",
+            "query": "骑行期间每小时应该摄入多少克碳水化合物",
+            "status": "pass",
+            "top_hit": {
+              "source": "ftp_and_metrics.md",
+              "char_count": 464,
+              "score": 0.8532,
+              "content_preview": "**参考值**： - <150：恢复快，次日可正常训练 - 150-300：中等疲劳，需1-2天恢复 - 300-450：高强度，需2-3天恢复 - >450：极高，需要数天充分恢复  ---  ##"
+            }
+          },
+          {
+            "id": "q18",
+            "query": "怎么选择公路车车架尺寸",
+            "status": "pass",
+            "top_hit": {
+              "source": "ftp_and_metrics.md",
+              "char_count": 464,
+              "score": 1.2244,
+              "content_preview": "**参考值**： - <150：恢复快，次日可正常训练 - 150-300：中等疲劳，需1-2天恢复 - 300-450：高强度，需2-3天恢复 - >450：极高，需要数天充分恢复  ---  ##"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "14",
+      "name": "k3_vs_k5_comparison",
+      "status": "pass",
+      "detail": {
+        "k3": {
+          "avg_precision": 0.5778,
+          "avg_recall": 0.9667
+        },
+        "k5": {
+          "avg_precision": 0.52,
+          "avg_recall": 1.0
+        },
+        "recall_gain": 0.0333,
+        "precision_drop": 0.0578,
+        "note": "总chunk数=7，k=5时召回>70%的知识库，precision下降在预期内"
+      }
+    },
+    {
+      "id": "15",
+      "name": "score_distribution",
+      "status": "pass",
+      "detail": {
+        "note": "L2距离越小越相似；in_scope分数应低于out_of_scope",
+        "in_scope_l2": {
+          "min": 0.486,
+          "max": 1.0392,
+          "avg": 0.7557
+        },
+        "out_of_scope_l2": {
+          "min": 0.8532,
+          "max": 1.3304,
+          "avg": 1.0867
+        },
+        "gap_out_minus_in": 0.331
+      }
+    }
+  ],
+  "errors": [],
+  "duration_s": 45.92,
+  "_per_query_detail": [
+    {
+      "id": "q01",
+      "query": "Z2训练的功率范围是多少",
+      "category": "in_scope",
+      "k": 3,
+      "precision": 0.3333,
+      "recall": 1.0,
+      "status": "fail",
+      "hits": [
+        {
+          "source": "training_zones.md",
+          "char_count": 348,
+          "score": 0.486,
+          "content_preview": "## 训练区间的实际应用  **Z2 训练**是耐力运动员的基础，建议占总训练量的 70-80%。 长时间 Z2 训练能提升线粒体密度和毛细血管网络，是提升有氧能力的核心手段。  **Z4 训练**是"
+        },
+        {
+          "source": "training_zones.md",
+          "char_count": 440,
+          "score": 0.6583,
+          "content_preview": "# 功率训练区间（Power Training Zones）  基于 FTP（功能性阈值功率）的六区间划分：  | 区间 | 名称 | %FTP | 心率参考 | 训练目的 | |------|---"
+        },
+        {
+          "source": "ftp_and_metrics.md",
+          "char_count": 468,
+          "score": 0.6591,
+          "content_preview": "# 核心训练指标  ## FTP（功能性阈值功率，Functional Threshold Power）  **定义**：骑手在1小时内能维持的最大平均功率，单位瓦特（W）。 是所有功率训练区间的计算"
+        }
+      ]
+    },
+    {
+      "id": "q02",
+      "query": "甜蜜点训练的功率区间是多少",
+      "category": "in_scope",
+      "k": 3,
+      "precision": 1.0,
+      "recall": 1.0,
+      "status": "pass",
+      "hits": [
+        {
+          "source": "training_zones.md",
+          "char_count": 440,
+          "score": 0.6293,
+          "content_preview": "# 功率训练区间（Power Training Zones）  基于 FTP（功能性阈值功率）的六区间划分：  | 区间 | 名称 | %FTP | 心率参考 | 训练目的 | |------|---"
+        },
+        {
+          "source": "training_zones.md",
+          "char_count": 348,
+          "score": 0.7038,
+          "content_preview": "## 训练区间的实际应用  **Z2 训练**是耐力运动员的基础，建议占总训练量的 70-80%。 长时间 Z2 训练能提升线粒体密度和毛细血管网络，是提升有氧能力的核心手段。  **Z4 训练**是"
+        },
+        {
+          "source": "ftp_and_metrics.md",
+          "char_count": 468,
+          "score": 0.8045,
+          "content_preview": "# 核心训练指标  ## FTP（功能性阈值功率，Functional Threshold Power）  **定义**：骑手在1小时内能维持的最大平均功率，单位瓦特（W）。 是所有功率训练区间的计算"
+        }
+      ]
+    },
+    {
+      "id": "q03",
+      "query": "Z5训练每周最多做几次，每次多长时间",
+      "category": "in_scope",
+      "k": 3,
+      "precision": 0.6667,
+      "recall": 1.0,
+      "status": "pass",
+      "hits": [
+        {
+          "source": "training_zones.md",
+          "char_count": 348,
+          "score": 0.7356,
+          "content_preview": "## 训练区间的实际应用  **Z2 训练**是耐力运动员的基础，建议占总训练量的 70-80%。 长时间 Z2 训练能提升线粒体密度和毛细血管网络，是提升有氧能力的核心手段。  **Z4 训练**是"
+        },
+        {
+          "source": "recovery_and_adaptation.md",
+          "char_count": 437,
+          "score": 0.7604,
+          "content_preview": "# 恢复与训练适应  ## 超量恢复原理  训练本质是施加压力 → 破坏稳态 → 恢复期超量补偿 → 能力提升。 关键：**压力和恢复必须匹配**，只有压力没有恢复 = 过度训练。  训练适应时间线："
+        },
+        {
+          "source": "recovery_and_adaptation.md",
+          "char_count": 330,
+          "score": 0.7703,
+          "content_preview": "---  ## 恢复策略  **训练后即时恢复（0-30分钟）**： - 补充碳水 + 蛋白质（比例约 3:1） - 示例：500ml 巧克力牛奶，或米饭 + 鸡胸肉  **睡眠**： - 最重要的恢"
+        }
+      ]
+    },
+    {
+      "id": "q04",
+      "query": "心率相比功率作为训练指标有什么局限性",
+      "category": "in_scope",
+      "k": 3,
+      "precision": 0.0,
+      "recall": 1.0,
+      "status": "fail",
+      "hits": [
+        {
+          "source": "training_zones.md",
+          "char_count": 440,
+          "score": 0.5617,
+          "content_preview": "# 功率训练区间（Power Training Zones）  基于 FTP（功能性阈值功率）的六区间划分：  | 区间 | 名称 | %FTP | 心率参考 | 训练目的 | |------|---"
+        },
+        {
+          "source": "ftp_and_metrics.md",
+          "char_count": 464,
+          "score": 0.6031,
+          "content_preview": "**参考值**： - <150：恢复快，次日可正常训练 - 150-300：中等疲劳，需1-2天恢复 - 300-450：高强度，需2-3天恢复 - >450：极高，需要数天充分恢复  ---  ##"
+        },
+        {
+          "source": "ftp_and_metrics.md",
+          "char_count": 468,
+          "score": 0.6503,
+          "content_preview": "# 核心训练指标  ## FTP（功能性阈值功率，Functional Threshold Power）  **定义**：骑手在1小时内能维持的最大平均功率，单位瓦特（W）。 是所有功率训练区间的计算"
+        }
+      ]
+    },
+    {
+      "id": "q05",
+      "query": "Z4阈值间歇的典型训练结构",
+      "category": "in_scope",
+      "k": 3,
+      "precision": 0.6667,
+      "recall": 1.0,
+      "status": "pass",
+      "hits": [
+        {
+          "source": "training_zones.md",
+          "char_count": 348,
+          "score": 0.7454,
+          "content_preview": "## 训练区间的实际应用  **Z2 训练**是耐力运动员的基础，建议占总训练量的 70-80%。 长时间 Z2 训练能提升线粒体密度和毛细血管网络，是提升有氧能力的核心手段。  **Z4 训练**是"
+        },
+        {
+          "source": "training_zones.md",
+          "char_count": 440,
+          "score": 0.7624,
+          "content_preview": "# 功率训练区间（Power Training Zones）  基于 FTP（功能性阈值功率）的六区间划分：  | 区间 | 名称 | %FTP | 心率参考 | 训练目的 | |------|---"
+        },
+        {
+          "source": "ftp_and_metrics.md",
+          "char_count": 464,
+          "score": 0.8173,
+          "content_preview": "**参考值**： - <150：恢复快，次日可正常训练 - 150-300：中等疲劳，需1-2天恢复 - 300-450：高强度，需2-3天恢复 - >450：极高，需要数天充分恢复  ---  ##"
+        }
+      ]
+    },
+    {
+      "id": "q06",
+      "query": "FTP有哪些测试方法",
+      "category": "in_scope",
+      "k": 3,
+      "precision": 0.6667,
+      "recall": 1.0,
+      "status": "pass",
+      "hits": [
+        {
+          "source": "ftp_and_metrics.md",
+          "char_count": 468,
+          "score": 0.6672,
+          "content_preview": "# 核心训练指标  ## FTP（功能性阈值功率，Functional Threshold Power）  **定义**：骑手在1小时内能维持的最大平均功率，单位瓦特（W）。 是所有功率训练区间的计算"
+        },
+        {
+          "source": "training_zones.md",
+          "char_count": 348,
+          "score": 0.7773,
+          "content_preview": "## 训练区间的实际应用  **Z2 训练**是耐力运动员的基础，建议占总训练量的 70-80%。 长时间 Z2 训练能提升线粒体密度和毛细血管网络，是提升有氧能力的核心手段。  **Z4 训练**是"
+        },
+        {
+          "source": "training_zones.md",
+          "char_count": 440,
+          "score": 0.8651,
+          "content_preview": "# 功率训练区间（Power Training Zones）  基于 FTP（功能性阈值功率）的六区间划分：  | 区间 | 名称 | %FTP | 心率参考 | 训练目的 | |------|---"
+        }
+      ]
+    },
+    {
+      "id": "q07",
+      "query": "TSS超过300需要恢复几天",
+      "category": "in_scope",
+      "k": 3,
+      "precision": 1.0,
+      "recall": 1.0,
+      "status": "pass",
+      "hits": [
+        {
+          "source": "recovery_and_adaptation.md",
+          "char_count": 437,
+          "score": 0.7752,
+          "content_preview": "# 恢复与训练适应  ## 超量恢复原理  训练本质是施加压力 → 破坏稳态 → 恢复期超量补偿 → 能力提升。 关键：**压力和恢复必须匹配**，只有压力没有恢复 = 过度训练。  训练适应时间线："
+        },
+        {
+          "source": "recovery_and_adaptation.md",
+          "char_count": 330,
+          "score": 0.7969,
+          "content_preview": "---  ## 恢复策略  **训练后即时恢复（0-30分钟）**： - 补充碳水 + 蛋白质（比例约 3:1） - 示例：500ml 巧克力牛奶，或米饭 + 鸡胸肉  **睡眠**： - 最重要的恢"
+        },
+        {
+          "source": "ftp_and_metrics.md",
+          "char_count": 464,
+          "score": 0.8488,
+          "content_preview": "**参考值**： - <150：恢复快，次日可正常训练 - 150-300：中等疲劳，需1-2天恢复 - 300-450：高强度，需2-3天恢复 - >450：极高，需要数天充分恢复  ---  ##"
+        }
+      ]
+    },
+    {
+      "id": "q08",
+      "query": "IF 0.9对应什么训练强度",
+      "category": "in_scope",
+      "k": 3,
+      "precision": 0.6667,
+      "recall": 1.0,
+      "status": "pass",
+      "hits": [
+        {
+          "source": "ftp_and_metrics.md",
+          "char_count": 464,
+          "score": 0.8341,
+          "content_preview": "**参考值**： - <150：恢复快，次日可正常训练 - 150-300：中等疲劳，需1-2天恢复 - 300-450：高强度，需2-3天恢复 - >450：极高，需要数天充分恢复  ---  ##"
+        },
+        {
+          "source": "ftp_and_metrics.md",
+          "char_count": 468,
+          "score": 0.8965,
+          "content_preview": "# 核心训练指标  ## FTP（功能性阈值功率，Functional Threshold Power）  **定义**：骑手在1小时内能维持的最大平均功率，单位瓦特（W）。 是所有功率训练区间的计算"
+        },
+        {
+          "source": "recovery_and_adaptation.md",
+          "char_count": 437,
+          "score": 0.9475,
+          "content_preview": "# 恢复与训练适应  ## 超量恢复原理  训练本质是施加压力 → 破坏稳态 → 恢复期超量补偿 → 能力提升。 关键：**压力和恢复必须匹配**，只有压力没有恢复 = 过度训练。  训练适应时间线："
+        }
+      ]
+    },
+    {
+      "id": "q09",
+      "query": "NP和平均功率有什么区别",
+      "category": "in_scope",
+      "k": 3,
+      "precision": 0.3333,
+      "recall": 1.0,
+      "status": "fail",
+      "hits": [
+        {
+          "source": "ftp_and_metrics.md",
+          "char_count": 464,
+          "score": 0.6646,
+          "content_preview": "**参考值**： - <150：恢复快，次日可正常训练 - 150-300：中等疲劳，需1-2天恢复 - 300-450：高强度，需2-3天恢复 - >450：极高，需要数天充分恢复  ---  ##"
+        },
+        {
+          "source": "ftp_and_metrics.md",
+          "char_count": 468,
+          "score": 0.7433,
+          "content_preview": "# 核心训练指标  ## FTP（功能性阈值功率，Functional Threshold Power）  **定义**：骑手在1小时内能维持的最大平均功率，单位瓦特（W）。 是所有功率训练区间的计算"
+        },
+        {
+          "source": "training_zones.md",
+          "char_count": 440,
+          "score": 0.8,
+          "content_preview": "# 功率训练区间（Power Training Zones）  基于 FTP（功能性阈值功率）的六区间划分：  | 区间 | 名称 | %FTP | 心率参考 | 训练目的 | |------|---"
+        }
+      ]
+    },
+    {
+      "id": "q10",
+      "query": "EF效率因子下降说明什么",
+      "category": "in_scope",
+      "k": 3,
+      "precision": 1.0,
+      "recall": 1.0,
+      "status": "pass",
+      "hits": [
+        {
+          "source": "ftp_and_metrics.md",
+          "char_count": 464,
+          "score": 0.8302,
+          "content_preview": "**参考值**： - <150：恢复快，次日可正常训练 - 150-300：中等疲劳，需1-2天恢复 - 300-450：高强度，需2-3天恢复 - >450：极高，需要数天充分恢复  ---  ##"
+        },
+        {
+          "source": "ftp_and_metrics.md",
+          "char_count": 97,
+          "score": 0.8394,
+          "content_preview": "---  ## HRV（心率变异性，Heart Rate Variability）  反映自主神经系统状态，间接衡量恢复程度。 每日晨起测量，HRV 下降超过基准值 20% 以上，建议减量训练。"
+        },
+        {
+          "source": "recovery_and_adaptation.md",
+          "char_count": 437,
+          "score": 1.0392,
+          "content_preview": "# 恢复与训练适应  ## 超量恢复原理  训练本质是施加压力 → 破坏稳态 → 恢复期超量补偿 → 能力提升。 关键：**压力和恢复必须匹配**，只有压力没有恢复 = 过度训练。  训练适应时间线："
+        }
+      ]
+    },
+    {
+      "id": "q11",
+      "query": "过度训练有哪些早期信号",
+      "category": "in_scope",
+      "k": 3,
+      "precision": 0.3333,
+      "recall": 1.0,
+      "status": "fail",
+      "hits": [
+        {
+          "source": "recovery_and_adaptation.md",
+          "char_count": 437,
+          "score": 0.6465,
+          "content_preview": "# 恢复与训练适应  ## 超量恢复原理  训练本质是施加压力 → 破坏稳态 → 恢复期超量补偿 → 能力提升。 关键：**压力和恢复必须匹配**，只有压力没有恢复 = 过度训练。  训练适应时间线："
+        },
+        {
+          "source": "ftp_and_metrics.md",
+          "char_count": 464,
+          "score": 0.888,
+          "content_preview": "**参考值**： - <150：恢复快，次日可正常训练 - 150-300：中等疲劳，需1-2天恢复 - 300-450：高强度，需2-3天恢复 - >450：极高，需要数天充分恢复  ---  ##"
+        },
+        {
+          "source": "recovery_and_adaptation.md",
+          "char_count": 330,
+          "score": 0.8922,
+          "content_preview": "---  ## 恢复策略  **训练后即时恢复（0-30分钟）**： - 补充碳水 + 蛋白质（比例约 3:1） - 示例：500ml 巧克力牛奶，或米饭 + 鸡胸肉  **睡眠**： - 最重要的恢"
+        }
+      ]
+    },
+    {
+      "id": "q12",
+      "query": "减量周训练量应该降到多少",
+      "category": "in_scope",
+      "k": 3,
+      "precision": 0.6667,
+      "recall": 1.0,
+      "status": "pass",
+      "hits": [
+        {
+          "source": "recovery_and_adaptation.md",
+          "char_count": 330,
+          "score": 0.6826,
+          "content_preview": "---  ## 恢复策略  **训练后即时恢复（0-30分钟）**： - 补充碳水 + 蛋白质（比例约 3:1） - 示例：500ml 巧克力牛奶，或米饭 + 鸡胸肉  **睡眠**： - 最重要的恢"
+        },
+        {
+          "source": "recovery_and_adaptation.md",
+          "char_count": 437,
+          "score": 0.6843,
+          "content_preview": "# 恢复与训练适应  ## 超量恢复原理  训练本质是施加压力 → 破坏稳态 → 恢复期超量补偿 → 能力提升。 关键：**压力和恢复必须匹配**，只有压力没有恢复 = 过度训练。  训练适应时间线："
+        },
+        {
+          "source": "ftp_and_metrics.md",
+          "char_count": 464,
+          "score": 0.7968,
+          "content_preview": "**参考值**： - <150：恢复快，次日可正常训练 - 150-300：中等疲劳，需1-2天恢复 - 300-450：高强度，需2-3天恢复 - >450：极高，需要数天充分恢复  ---  ##"
+        }
+      ]
+    },
+    {
+      "id": "q13",
+      "query": "训练后多长时间内补充营养效果最好",
+      "category": "in_scope",
+      "k": 3,
+      "precision": 0.3333,
+      "recall": 1.0,
+      "status": "fail",
+      "hits": [
+        {
+          "source": "recovery_and_adaptation.md",
+          "char_count": 330,
+          "score": 0.5647,
+          "content_preview": "---  ## 恢复策略  **训练后即时恢复（0-30分钟）**： - 补充碳水 + 蛋白质（比例约 3:1） - 示例：500ml 巧克力牛奶，或米饭 + 鸡胸肉  **睡眠**： - 最重要的恢"
+        },
+        {
+          "source": "recovery_and_adaptation.md",
+          "char_count": 437,
+          "score": 0.6515,
+          "content_preview": "# 恢复与训练适应  ## 超量恢复原理  训练本质是施加压力 → 破坏稳态 → 恢复期超量补偿 → 能力提升。 关键：**压力和恢复必须匹配**，只有压力没有恢复 = 过度训练。  训练适应时间线："
+        },
+        {
+          "source": "ftp_and_metrics.md",
+          "char_count": 464,
+          "score": 0.828,
+          "content_preview": "**参考值**： - <150：恢复快，次日可正常训练 - 150-300：中等疲劳，需1-2天恢复 - 300-450：高强度，需2-3天恢复 - >450：极高，需要数天充分恢复  ---  ##"
+        }
+      ]
+    },
+    {
+      "id": "q14",
+      "query": "有氧能力的适应大概需要多少周",
+      "category": "in_scope",
+      "k": 3,
+      "precision": 0.3333,
+      "recall": 1.0,
+      "status": "fail",
+      "hits": [
+        {
+          "source": "recovery_and_adaptation.md",
+          "char_count": 437,
+          "score": 0.7222,
+          "content_preview": "# 恢复与训练适应  ## 超量恢复原理  训练本质是施加压力 → 破坏稳态 → 恢复期超量补偿 → 能力提升。 关键：**压力和恢复必须匹配**，只有压力没有恢复 = 过度训练。  训练适应时间线："
+        },
+        {
+          "source": "ftp_and_metrics.md",
+          "char_count": 464,
+          "score": 0.7652,
+          "content_preview": "**参考值**： - <150：恢复快，次日可正常训练 - 150-300：中等疲劳，需1-2天恢复 - 300-450：高强度，需2-3天恢复 - >450：极高，需要数天充分恢复  ---  ##"
+        },
+        {
+          "source": "recovery_and_adaptation.md",
+          "char_count": 330,
+          "score": 0.7654,
+          "content_preview": "---  ## 恢复策略  **训练后即时恢复（0-30分钟）**： - 补充碳水 + 蛋白质（比例约 3:1） - 示例：500ml 巧克力牛奶，或米饭 + 鸡胸肉  **睡眠**： - 最重要的恢"
+        }
+      ]
+    },
+    {
+      "id": "q15",
+      "query": "TSB是负值说明什么，适合什么训练",
+      "category": "in_scope_multi",
+      "k": 3,
+      "precision": 0.6667,
+      "recall": 0.5,
+      "status": "pass",
+      "hits": [
+        {
+          "source": "ftp_and_metrics.md",
+          "char_count": 464,
+          "score": 0.7759,
+          "content_preview": "**参考值**： - <150：恢复快，次日可正常训练 - 150-300：中等疲劳，需1-2天恢复 - 300-450：高强度，需2-3天恢复 - >450：极高，需要数天充分恢复  ---  ##"
+        },
+        {
+          "source": "ftp_and_metrics.md",
+          "char_count": 468,
+          "score": 0.8275,
+          "content_preview": "# 核心训练指标  ## FTP（功能性阈值功率，Functional Threshold Power）  **定义**：骑手在1小时内能维持的最大平均功率，单位瓦特（W）。 是所有功率训练区间的计算"
+        },
+        {
+          "source": "ftp_and_metrics.md",
+          "char_count": 97,
+          "score": 0.8446,
+          "content_preview": "---  ## HRV（心率变异性，Heart Rate Variability）  反映自主神经系统状态，间接衡量恢复程度。 每日晨起测量，HRV 下降超过基准值 20% 以上，建议减量训练。"
+        }
+      ]
+    },
+    {
+      "id": "q16",
+      "query": "我昨天骑行的TSB是多少",
+      "category": "out_of_scope",
+      "k": 3,
+      "precision": 1.0,
+      "recall": null,
+      "status": "pass",
+      "hits": [
+        {
+          "source": "ftp_and_metrics.md",
+          "char_count": 464,
+          "score": 0.926,
+          "content_preview": "**参考值**： - <150：恢复快，次日可正常训练 - 150-300：中等疲劳，需1-2天恢复 - 300-450：高强度，需2-3天恢复 - >450：极高，需要数天充分恢复  ---  ##"
+        },
+        {
+          "source": "ftp_and_metrics.md",
+          "char_count": 468,
+          "score": 1.0517,
+          "content_preview": "# 核心训练指标  ## FTP（功能性阈值功率，Functional Threshold Power）  **定义**：骑手在1小时内能维持的最大平均功率，单位瓦特（W）。 是所有功率训练区间的计算"
+        },
+        {
+          "source": "recovery_and_adaptation.md",
+          "char_count": 330,
+          "score": 1.0946,
+          "content_preview": "---  ## 恢复策略  **训练后即时恢复（0-30分钟）**： - 补充碳水 + 蛋白质（比例约 3:1） - 示例：500ml 巧克力牛奶，或米饭 + 鸡胸肉  **睡眠**： - 最重要的恢"
+        }
+      ]
+    },
+    {
+      "id": "q17",
+      "query": "骑行期间每小时应该摄入多少克碳水化合物",
+      "category": "out_of_scope",
+      "k": 3,
+      "precision": 1.0,
+      "recall": null,
+      "status": "pass",
+      "hits": [
+        {
+          "source": "ftp_and_metrics.md",
+          "char_count": 464,
+          "score": 0.8532,
+          "content_preview": "**参考值**： - <150：恢复快，次日可正常训练 - 150-300：中等疲劳，需1-2天恢复 - 300-450：高强度，需2-3天恢复 - >450：极高，需要数天充分恢复  ---  ##"
+        },
+        {
+          "source": "recovery_and_adaptation.md",
+          "char_count": 330,
+          "score": 0.8827,
+          "content_preview": "---  ## 恢复策略  **训练后即时恢复（0-30分钟）**： - 补充碳水 + 蛋白质（比例约 3:1） - 示例：500ml 巧克力牛奶，或米饭 + 鸡胸肉  **睡眠**： - 最重要的恢"
+        },
+        {
+          "source": "ftp_and_metrics.md",
+          "char_count": 468,
+          "score": 1.0955,
+          "content_preview": "# 核心训练指标  ## FTP（功能性阈值功率，Functional Threshold Power）  **定义**：骑手在1小时内能维持的最大平均功率，单位瓦特（W）。 是所有功率训练区间的计算"
+        }
+      ]
+    },
+    {
+      "id": "q18",
+      "query": "怎么选择公路车车架尺寸",
+      "category": "out_of_scope",
+      "k": 3,
+      "precision": 1.0,
+      "recall": null,
+      "status": "pass",
+      "hits": [
+        {
+          "source": "ftp_and_metrics.md",
+          "char_count": 464,
+          "score": 1.2244,
+          "content_preview": "**参考值**： - <150：恢复快，次日可正常训练 - 150-300：中等疲劳，需1-2天恢复 - 300-450：高强度，需2-3天恢复 - >450：极高，需要数天充分恢复  ---  ##"
+        },
+        {
+          "source": "training_zones.md",
+          "char_count": 348,
+          "score": 1.3214,
+          "content_preview": "## 训练区间的实际应用  **Z2 训练**是耐力运动员的基础，建议占总训练量的 70-80%。 长时间 Z2 训练能提升线粒体密度和毛细血管网络，是提升有氧能力的核心手段。  **Z4 训练**是"
+        },
+        {
+          "source": "training_zones.md",
+          "char_count": 440,
+          "score": 1.3304,
+          "content_preview": "# 功率训练区间（Power Training Zones）  基于 FTP（功能性阈值功率）的六区间划分：  | 区间 | 名称 | %FTP | 心率参考 | 训练目的 | |------|---"
+        }
+      ]
+    }
+  ],
+  "_threshold_sweep": [
+    {
+      "threshold": 0.8,
+      "avg_precision": 0.7189,
+      "avg_recall": 0.9,
+      "avg_hits_returned": 2.4,
+      "out_scope_rejection_rate": 1.0
+    },
+    {
+      "threshold": 0.85,
+      "avg_precision": 0.6544,
+      "avg_recall": 1.0,
+      "avg_hits_returned": 3.13,
+      "out_scope_rejection_rate": 1.0
+    },
+    {
+      "threshold": 0.9,
+      "avg_precision": 0.5589,
+      "avg_recall": 1.0,
+      "avg_hits_returned": 3.87,
+      "out_scope_rejection_rate": 1.0
+    },
+    {
+      "threshold": 0.95,
+      "avg_precision": 0.5256,
+      "avg_recall": 1.0,
+      "avg_hits_returned": 4.27,
+      "out_scope_rejection_rate": 1.0
+    },
+    {
+      "threshold": "∞",
+      "avg_precision": 0.52,
+      "avg_recall": 1.0,
+      "avg_hits_returned": 5.0,
+      "out_scope_rejection_rate": 1.0
+    }
+  ]
+}

@@ -1,0 +1,60 @@
+{
+  "layer": 4,
+  "name": "generation",
+  "passed": false,
+  "score": 0.0,
+  "items": [
+    {
+      "id": "16",
+      "name": "faithfulness",
+      "status": "skip",
+      "detail": {
+        "reason": "DEEPSEEK_API_KEY 未设置"
+      }
+    },
+    {
+      "id": "17",
+      "name": "answer_relevancy",
+      "status": "skip",
+      "detail": {
+        "reason": "DEEPSEEK_API_KEY 未设置"
+      }
+    },
+    {
+      "id": "18",
+      "name": "domain_correctness",
+      "status": "skip",
+      "detail": {
+        "reason": "DEEPSEEK_API_KEY 未设置"
+      }
+    },
+    {
+      "id": "19",
+      "name": "hallucination_test",
+      "status": "skip",
+      "detail": {
+        "reason": "DEEPSEEK_API_KEY 未设置"
+      }
+    },
+    {
+      "id": "20",
+      "name": "plan_reasonableness",
+      "status": "skip",
+      "detail": {
+        "reason": "DEEPSEEK_API_KEY 未设置"
+      }
+    },
+    {
+      "id": "21",
+      "name": "ablation",
+      "status": "skip",
+      "detail": {
+        "reason": "DEEPSEEK_API_KEY 未设置"
+      }
+    }
+  ],
+  "errors": [
+    "DEEPSEEK_API_KEY 未设置，所有项跳过"
+  ],
+  "duration_s": 0.0
+}

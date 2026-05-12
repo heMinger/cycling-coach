@@ -1,0 +1,263 @@
+{
+  "layer": 4,
+  "name": "generation",
+  "passed": true,
+  "score": 1.0,
+  "items": [
+    {
+      "id": "16",
+      "name": "faithfulness",
+      "status": "pass",
+      "detail": {
+        "avg_score": 1.0,
+        "threshold": 0.7,
+        "per_query": [
+          {
+            "id": "q06",
+            "query": "FTP有哪些测试方法？",
+            "score": 1.0,
+            "reason": "回答完全忠实于参考知识中关于FTP测试方法的描述，没有添加或遗漏任何信息。",
+            "answer": "FTP有三种测试方法：20分钟全力测试取平均功率×0.95；8分钟测试取平均功率×0.90；Ramp Test逐级递增功率至力竭，取最后完成阶段功率×0.75。"
+          },
+          {
+            "id": "q07",
+            "query": "TSS超过300大概需要恢复几天？",
+            "score": 1.0,
+            "reason": "回答中关于TSS超过300后建议2天主动恢复、第1天完全休息或Z1骑行30分钟、第2天Z1骑行45分钟、以及根据晨起静息心率延长恢复天数的内容，均直接来源于参考知识中的恢复策略和过度训练信号部分，没有虚构或偏离原文信息。",
+            "answer": "TSS超过300，建议至少安排2天主动恢复。第1天完全休息或Z1骑行30分钟，第2天Z1骑行45分钟。若晨起静息心率仍高于基准5bpm以上，延长至3天。恢复不足会导致过度训练，表现下降。"
+          },
+          {
+            "id": "q11",
+            "query": "过度训练的早期信号有哪些？",
+            "score": 1.0,
+            "reason": "回答中列举的晨起静息心率、HRV、相同功率下心率偏高、睡眠质量下降等所有信号均直接来自参考知识中的‘早期信号’部分，无任何虚构或添加内容。",
+            "answer": "晨起静息心率持续高于基准5bpm以上，HRV持续低于个人基准，相同功率下心率偏高，睡眠质量下降、入睡困难。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "17",
+      "name": "answer_relevancy",
+      "status": "pass",
+      "detail": {
+        "avg_score": 1.0,
+        "threshold": 0.7,
+        "per_query": [
+          {
+            "id": "q06",
+            "query": "FTP有哪些测试方法？",
+            "score": 1.0,
+            "reason": "回答直接列出了FTP的三种测试方法，完全切题且无跑题内容。"
+          },
+          {
+            "id": "q07",
+            "query": "TSS超过300大概需要恢复几天？",
+            "score": 1.0,
+            "reason": "回答直接针对TSS超过300的恢复天数问题，给出了具体的2天建议和延长条件，完全切题且基于参考知识中的恢复策略和过度训练信号。"
+          },
+          {
+            "id": "q11",
+            "query": "过度训练的早期信号有哪些？",
+            "score": 1.0,
+            "reason": "回答直接列出了过度训练的早期信号，完全切题且与参考知识一致。"
+          }
+        ]
+      }
+    },
+    {
+      "id": "18",
+      "name": "domain_correctness",
+      "status": "pass",
+      "detail": {
+        "cases_passed": 3,
+        "cases_total": 3,
+        "per_case": [
+          {
+            "id": "dc01",
+            "question": "FTP是202W，Z2训练的功率上下限各是多少瓦？只给数字。",
+            "answer": "Z2功率下限：202W × 55% = 111W，上限：202W × 75% = 152W。",
+            "passed": true,
+            "note": "56-75% FTP = 113-152W；如果回答 60-70%=121-141W 则为领域错误",
+            "detail": {
+              "expected_lo": 113,
+              "expected_hi": 152,
+              "found_numbers": [
+                2.0,
+                202.0,
+                55.0,
+                111.0,
+                202.0,
+                75.0,
+                152.0
+              ],
+              "lo_matched": true,
+              "hi_matched": true,
+              "passed": true,
+              "note": "56-75% FTP = 113-152W；如果回答 60-70%=121-141W 则为领域错误"
+            }
+          },
+          {
+            "id": "dc02",
+            "question": "NP是190W，FTP是202W，IF是多少？只给小数。",
+            "answer": "0.94",
+            "passed": true,
+            "note": "IF = NP/FTP = 0.94",
+            "detail": {
+              "expected": 0.9406,
+              "tolerance": 0.02,
+              "found_numbers": [
+                0.94
+              ],
+              "close_match": [
+                0.94
+              ],
+              "passed": true
+            }
+          },
+          {
+            "id": "dc03",
+            "question": "TSB是-25，处于哪个状态区间？用一个词或短语回答。",
+            "answer": "训练过度或疲劳积累期。TSB低于-30为深度疲劳，-25处于明显疲劳区间，需降低训练负荷并加强恢复。",
+            "passed": true,
+            "note": "TSB -25 表示高疲劳/过渡区间",
+            "detail": {
+              "expected_keywords": [
+                "疲劳",
+                "过渡",
+                "高负荷",
+                "高风险",
+                "积累"
+              ],
+              "found": [
+                "疲劳",
+                "积累"
+              ],
+              "passed": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "19",
+      "name": "hallucination_test",
+      "status": "pass",
+      "detail": {
+        "hallucinated_count": 0,
+        "total": 2,
+        "per_case": [
+          {
+            "id": "h01",
+            "question": "我上周三骑行的NP具体是多少瓦？",
+            "answer": "无法提供具体NP数据。你的训练系统离线，无逐次记录。建议：1）检查码表或功率计是否同步；2）手动上传.fit文件至训练平台（如TrainingPeaks）。FTP 202W下，典型平路NP约180-195W，爬坡段可能升至210-220W。",
+            "hallucinated": false,
+            "danger_found": [],
+            "note": "档案里没有逐次记录，不应编造具体 NP 瓦数（FTP=202W 是合法引用，不算幻觉）"
+          },
+          {
+            "id": "h02",
+            "question": "我3月10日骑行的平均心率是多少？",
+            "answer": "无法提供具体数据。你的训练记录系统离线，无3月10日骑行数据。请检查设备同步或手动输入心率文件。",
+            "hallucinated": false,
+            "danger_found": [],
+            "note": "档案里没有该日期数据，不应编造心率数字"
+          }
+        ]
+      }
+    },
+    {
+      "id": "20",
+      "name": "plan_reasonableness",
+      "status": "pass",
+      "detail": {
+        "week_type": "恢复周",
+        "tss_range_used": [
+          100,
+          250
+        ],
+        "total_tss": 250,
+        "rest_days": 3,
+        "max_single_tss": 85,
+        "events_count": 7,
+        "checks": {
+          "total_tss_in_range": true,
+          "has_rest_day": true,
+          "no_extreme_single_session": true,
+          "has_events": true
+        },
+        "plan_summary": "本周为恢复周，以Z1和Z2有氧骑行为主，严格控制TSS上限250，促进疲劳恢复，同时保护膝盖。",
+        "events": [
+          {
+            "date": "2026-05-06",
+            "name": "主动恢复骑行",
+            "tss": 30
+          },
+          {
+            "date": "2026-05-07",
+            "name": "有氧基础骑行",
+            "tss": 60
+          },
+          {
+            "date": "2026-05-08",
+            "name": "恢复日",
+            "tss": 0
+          },
+          {
+            "date": "2026-05-09",
+            "name": "有氧基础骑行",
+            "tss": 75
+          },
+          {
+            "date": "2026-05-10",
+            "name": "恢复日",
+            "tss": 0
+          },
+          {
+            "date": "2026-05-11",
+            "name": "有氧耐力骑行",
+            "tss": 85
+          },
+          {
+            "date": "2026-05-12",
+            "name": "休息日",
+            "tss": 0
+          }
+        ]
+      }
+    },
+    {
+      "id": "21",
+      "name": "ablation",
+      "status": "pass",
+      "detail": {
+        "rag_wins": 1,
+        "total": 2,
+        "per_query": [
+          {
+            "id": "q03",
+            "query": "Z5训练每周最多做几次，每次多长时间？",
+            "answer_with_rag": "Z5训练每周不超过2次，每次总时长不超过30分钟。高强度训练恢复需求大，过量会降低训练质量并增加受伤风险。",
+            "answer_without_rag": "Z5训练每周最多2次，每次持续3-5分钟，重复3-5组，组间休息5分钟。超过2次会导致恢复不足，增加受伤风险。Z5强度对应最大心率90-100%，总时长控制在15-25分钟以内。",
+            "verdict": {
+              "winner": "B",
+              "reason": "B不仅给出了每周次数和总时长限制，还具体说明了单次持续时间、组数、组间休息及心率区间，比A的笼统建议更具可操作性和实际指导价值。"
+            }
+          },
+          {
+            "id": "q11",
+            "query": "过度训练的早期信号有哪些？",
+            "answer_with_rag": "晨起静息心率持续高于基准5bpm以上，HRV持续低于个人基准，相同功率下心率偏高，睡眠质量下降、入睡困难。",
+            "answer_without_rag": "过度训练的早期信号包括：静息心率连续3天上升5-10次/分钟，训练后疲劳感持续超过24小时，睡眠质量下降（入睡困难或早醒），以及情绪易怒或训练动力下降。若出现上述2项以上，建议减少训练量50%并增加休息日。",
+            "verdict": {
+              "winner": "A",
+              "reason": "A的回答更精准地量化了晨起静息心率、HRV和相同功率心率等客观指标，且无冗余建议，而B的表述虽具体但部分指标（如疲劳感持续24小时）不够精确，且包含主观情绪判断，实际指导价值略逊于A。"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [],
+  "duration_s": 82.54
+}
