@@ -4,6 +4,17 @@
 
 ---
 
+## 2026-06-19（续2）— 测试扩展：错误恢复 + 幻觉检测
+
+### 新增测试文件
+- `tests/test_error_recovery.py`（6 条）：三层降级链单元测试（实时→缓存→静态档案）、Agent 不因工具失败而 500、数据新鲜度检查
+- `tests/test_hallucination.py`（6 条）：不编造 FTP/功率数值、虚构概念拒绝、使用工具数据而非模型知识
+- **依据**：FutureAGI "Error Recovery" + "Result Utilization" 维度
+- **踩坑**：LangGraph 工具在独立线程执行，`unittest.mock.patch` 模块级函数不起作用；改为直接调用 `_fetch_context()` 做单元测试
+- **结果**：40/40 全部通过（188s）
+
+---
+
 ## 2026-06-19（续）— 测试扩展：边界拒绝 + 多轮一致性
 
 ### 新增测试文件

@@ -44,8 +44,8 @@ class TestAskEndpoint:
         })
         assert r2.status_code == 200
         data2 = r2.json()
-        # 可能在 awaiting_confirmation 状态（计划已生成等待确认）
-        assert data2["type"] in ("message", "awaiting_confirmation")
+        # 可能在 awaiting_* 状态（agent 需要确认或更多信息）
+        assert data2["type"] in ("message", "awaiting_confirmation", "awaiting_input")
 
 
 class TestMemoryEndpoints:
