@@ -4,6 +4,15 @@
 
 ---
 
+## 2026-06-19（续3）— 测试扩展：参数校验
+
+### 新增测试文件
+- `tests/test_tools.py`（10 条）：search_knowledge 空/空白/单字符/正常/不存在；analyze_and_plan 空/模糊/具体；modify_plan 无计划报错；ask_user 参数 schema
+- **依据**：FutureAGI "Argument Extraction" + BFCL 参数正确性
+- **结果**：50/50 全部通过（217s）
+
+---
+
 ## 2026-06-19（续2）— 测试扩展：错误恢复 + 幻觉检测
 
 ### 新增测试文件
