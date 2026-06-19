@@ -15,6 +15,23 @@ load_dotenv()
 
 # ── 内部辅助函数 ──────────────────────────────────────────────
 
+# 时区缓存（一次 API 调用后缓存，避免每次 agent_node 都调 API）
+_tz_cache: dict = {"value": None}
+
+
+def _get_user_timezone() -> str:
+    """获取用户时区（缓存在内存中，避免重复 API 调用）。"""
+    if _tz_cache["value"] is None:
+        try:
+            from intervals_client import IntervalsClient
+            client = IntervalsClient()
+            tz = client.get_timezone()
+            _tz_cache["value"] = tz
+        except Exception:
+            _tz_cache["value"] = "UTC"
+    return _tz_cache["value"]
+
+
 def _fetch_context() -> str:
     """并行拉取 Strava + Intervals，三层降级：实时 → cache → 静态档案。"""
     CACHE_PATH = "cache/user_profile_cache.md"

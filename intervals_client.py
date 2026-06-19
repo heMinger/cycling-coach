@@ -110,9 +110,17 @@ class IntervalsClient:
     def get_athlete_info(self) -> dict:
         """
         拉取运动员基本信息
-        包括：ftp, lthr(乳酸阈值心率), weight 等
+        包括：ftp, lthr(乳酸阈值心率), weight, timezone 等
         """
         return self._get(f"/athlete/{self.athlete_id}")
+
+    def get_timezone(self) -> str:
+        """返回用户时区（如 Asia/Shanghai），失败返回 UTC。"""
+        try:
+            athlete = self.get_athlete_info()
+            return athlete.get("timezone", "UTC") or "UTC"
+        except Exception:
+            return "UTC"
 
     # ── 读取：训练计划 ────────────────────────────────────────
 
@@ -208,6 +216,7 @@ class IntervalsClient:
         ftp = ride_settings.get("ftp", "未知") or "未知"
         weight = athlete.get("icu_weight") or athlete.get("weight") or "未知"
         lthr = ride_settings.get("lthr", "未知") or "未知"
+        timezone = athlete.get("timezone", "UTC")
 
         # 2. 近期训练
         activities = self.get_activities(days=activity_days)
@@ -260,6 +269,7 @@ class IntervalsClient:
 - FTP：{ftp}W
 - 体重：{weight}kg
 - 乳酸阈值心率（LTHR）：{lthr}bpm
+- 时区：{timezone}
 
 ## 当前训练状态（最新）
 - 健康度（CTL）：{ctl}

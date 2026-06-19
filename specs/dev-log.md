@@ -4,6 +4,17 @@
 
 ---
 
+## 2026-06-19（续5）— 修复：时区（UTC → Asia/Shanghai）
+
+### 修复
+- **agent.py**：system prompt 日期从 `datetime.now()`（服务器 UTC）改为 `_today_str()` 读用户时区
+- **tools.py**：新增 `_get_user_timezone()` 缓存函数，一次 API 调用后内存缓存，避免 agent_node 每次调 API
+- **intervals_client.py**：新增 `get_timezone()` 方法 + context 加入时区行
+- **数据来源**：Intervals API 返回 `timezone: "Asia/Shanghai"`，直接读取，无需配置
+- **结果**：用户时区 Asia/Shanghai，50/50 通过
+
+---
+
 ## 2026-06-19（续4）— 修复：API 数据字段路径 + 去硬编码 + 计划日期
 
 ### 修复清单

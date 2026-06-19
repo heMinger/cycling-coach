@@ -2,6 +2,7 @@ import json
 import ast
 import os
 from datetime import datetime
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from typing import Literal
 
 from dotenv import load_dotenv
@@ -12,7 +13,7 @@ from langgraph.prebuilt import ToolNode
 
 import memory as mem
 from agent_state import AgentState
-from tools import ALL_TOOLS
+from tools import ALL_TOOLS, _get_user_timezone
 
 load_dotenv()
 
@@ -77,6 +78,17 @@ def custom_tool_node(state: AgentState) -> dict:
     return {**result, **updates}
 
 
+def _today_str() -> str:
+    """返回用户时区的当前日期。"""
+    try:
+        tz_name = _get_user_timezone()
+        tz = ZoneInfo(tz_name)
+    except (ZoneInfoNotFoundError, Exception):
+        tz = None
+    now = datetime.now(tz)
+    return now.strftime("%Y年%m月%d日")
+
+
 # ── agent_node ────────────────────────────────────────────────
 
 def agent_node(state: AgentState) -> dict:
@@ -107,7 +119,7 @@ def agent_node(state: AgentState) -> dict:
         )
 
     system = SystemMessage(content=f"""你是一个专业的公路骑行教练，风格简练直接。
-今天是 {datetime.now().strftime("%Y年%m月%d日")}。
+今天是 {_today_str()}（用户当地时间）。
 
 ## 工具调用规则（严格遵守，不可跳过）
 - 用户询问骑行知识 → 必须调用 search_knowledge，即使你已知答案也必须通过工具作答，不得直接回答。
