@@ -4,6 +4,16 @@
 
 ---
 
+## 2026-06-19（续4）— 修复：API 数据字段路径 + 去硬编码 + 计划日期
+
+### 修复清单
+- **Intervals API 读取 FTP/体重/LTHR**：原代码读 `athlete["ftp"]`（顶层永远 null），改为读 `sportSettings[0].ftp`（200W）、`icu_weight`（63kg）、`sportSettings[0].lthr`（182bpm）
+- **移除 `_fetch_context()` 硬编码用户信息**：API 数据正确后不再需要写死的姓名/FTP/体重/目标
+- **计划日期写死**：`tools.py:242` 示例 `"2026-05-05"` 改为 `datetime.now()` 动态日期
+- **结果**：FTP 从硬编码 202W 改为 API 实际值 200W，50/50 测试通过
+
+---
+
 ## 2026-06-19（续3）— 测试扩展：参数校验
 
 ### 新增测试文件

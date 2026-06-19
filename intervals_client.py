@@ -198,11 +198,16 @@ class IntervalsClient:
         整合所有数据，构建供 RAG 注入的用户上下文字符串
         替代静态的 user_profile.md
         """
-        # 1. 基本信息
+        # 1. 基本信息（FTP/LTHR 在 sportSettings 数组里，weight 在 icu_weight）
         athlete = self.get_athlete_info()
-        ftp = athlete.get("ftp", "未知")
-        weight = athlete.get("weight", "未知")
-        lthr = athlete.get("lthr", "未知")
+        sport_settings = athlete.get("sportSettings", [])
+        ride_settings = next(
+            (s for s in sport_settings if s.get("types") and "Ride" in s["types"]),
+            {}
+        ) if sport_settings else {}
+        ftp = ride_settings.get("ftp", "未知") or "未知"
+        weight = athlete.get("icu_weight") or athlete.get("weight") or "未知"
+        lthr = ride_settings.get("lthr", "未知") or "未知"
 
         # 2. 近期训练
         activities = self.get_activities(days=activity_days)

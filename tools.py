@@ -2,6 +2,7 @@ import json
 import ast
 import os
 import concurrent.futures
+from datetime import datetime
 from typing import Annotated
 
 from dotenv import load_dotenv
@@ -29,15 +30,7 @@ def _fetch_context() -> str:
             activity_context = f_strava.result()
             wellness_context = f_intervals.result()
 
-        data = f"""## 基本信息
-- 姓名：Minghe，女，23岁，体重63kg
-- FTP：202W，最大心率：194bpm
-
-## 训练目标
-- 截止：2026年6月15日
-- 目标FTP：220W（差18W），目标体重：60kg（差3kg）
-
-{wellness_context}
+        data = f"""{wellness_context}
 {activity_context}
 """
         os.makedirs("cache", exist_ok=True)
@@ -239,7 +232,7 @@ def analyze_and_plan(user_request: str) -> dict:
   "summary": "一句话说明本周计划思路",
   "events": [
     {{
-      "date": "2026-05-05",
+      "date": "{datetime.now().strftime('%Y-%m-%d')} 或根据计划起始日期调整",
       "name": "训练名称",
       "description": "具体内容，包含功率区间、时长",
       "load_target": 目标TSS数字
