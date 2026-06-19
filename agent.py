@@ -1,6 +1,7 @@
 import json
 import ast
 import os
+from datetime import datetime
 from typing import Literal
 
 from dotenv import load_dotenv
@@ -106,6 +107,7 @@ def agent_node(state: AgentState) -> dict:
         )
 
     system = SystemMessage(content=f"""你是一个专业的公路骑行教练，风格简练直接。
+今天是 {datetime.now().strftime("%Y年%m月%d日")}。
 
 ## 工具调用规则（严格遵守，不可跳过）
 - 用户询问骑行知识 → 必须调用 search_knowledge，即使你已知答案也必须通过工具作答，不得直接回答。

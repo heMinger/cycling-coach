@@ -32,28 +32,32 @@ class IntervalsClient:
     def _get(self, endpoint: str, params: dict = None):
         """GET 请求封装"""
         url = f"{self.base_url}{endpoint}"
-        response = requests.get(url, headers=self.headers, params=params)
+        response = requests.get(url, headers=self.headers, params=params,
+                                proxies={"http": None, "https": None})
         response.raise_for_status()
         return response.json()
 
     def _post(self, endpoint: str, data: dict):
         """POST 请求封装"""
         url = f"{self.base_url}{endpoint}"
-        response = requests.post(url, headers=self.headers, json=data)
+        response = requests.post(url, headers=self.headers, json=data,
+                                 proxies={"http": None, "https": None})
         response.raise_for_status()
         return response.json()
 
     def _put(self, endpoint: str, data: dict):
         """PUT 请求封装"""
         url = f"{self.base_url}{endpoint}"
-        response = requests.put(url, headers=self.headers, json=data)
+        response = requests.put(url, headers=self.headers, json=data,
+                                proxies={"http": None, "https": None})
         response.raise_for_status()
         return response.json()
 
     def _delete(self, endpoint: str):
         """DELETE 请求封装"""
         url = f"{self.base_url}{endpoint}"
-        response = requests.delete(url, headers=self.headers)
+        response = requests.delete(url, headers=self.headers,
+                                   proxies={"http": None, "https": None})
         response.raise_for_status()
         return response.status_code
 
