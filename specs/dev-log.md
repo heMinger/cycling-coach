@@ -4,6 +4,16 @@
 
 ---
 
+## 2026-06-19（续）— 测试扩展：边界拒绝 + 多轮一致性
+
+### 新增测试文件
+- `tests/test_boundaries.py`（6 条）：越界拒绝（修车/股票/用药）、身份感知
+- `tests/test_consistency.py`（3 条）：追问记住上下文、状态到计划连续、计划修改识别
+- **依据**：Google Cloud RAG checklist "Domain Boundaries" + FutureAGI "Plan Coherence" 维度
+- **结果**：27/27 全部通过（118s）
+
+---
+
 ## 2026-06-19 — 二期开发启动：目录整理、基础功能修复、测试框架
 
 ### 目录结构重组
