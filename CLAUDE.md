@@ -36,11 +36,12 @@ pip install <package> -i https://pypi.org/simple/
 
 ## 编码规则
 
+- **五步开发流程（强制执行）**：① 搜索行业典范实现 → ② 留档参考方案 → ③ 对比方法制定计划，存 `specs/` → ④ 用户确认 → ⑤ 实施并更新 `specs/dev-log.md`
 - **注释只写为什么**，不写是什么。如果移除注释不会让未来读者困惑，就不要写
 - **不引入不必要的抽象**。三个相似行好过一个过早的工厂类
 - **每次改动必须记录**到 `specs/dev-log.md`，包含：日期、改动内容、依据/参考、踩坑和修复
 - **修改代码后运行测试套件**：`python -m pytest tests/ -v`
-- **System prompt 必须注入当前日期**（`datetime.now().strftime("%Y年%m月%d日")`），DeepSeek API 不自动提供
+- **System prompt 必须注入当前日期**（通过 `_today_str()` 读用户时区）
 - **Intervals.icu 请求必须绕过代理直连**（`proxies={"http": None, "https": None}`），服务器 7890 端口代理会打断 SSL 握手
 - **普通回答控制在 150 字以内，不使用 markdown 格式**（前端 textContent 渲染）
 

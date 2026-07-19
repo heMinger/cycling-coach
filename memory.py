@@ -136,6 +136,25 @@ def get_recent_messages(session_id: str, n_turns: int = MAX_SHORT_TERM) -> list:
     rows.reverse()
     return [{"role": row[0], "content": row[1]} for row in rows]
 
+def get_session_messages(session_id: str, limit: int = 50) -> list:
+    """
+    获取会话的所有消息，用于前端刷新后恢复聊天记录。
+    返回格式：[{"role": "user/assistant", "content": "..."}, ...]
+    按时间正序排列。
+    """
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute("""
+        SELECT role, content FROM conversations
+        WHERE session_id = ?
+        ORDER BY timestamp ASC
+        LIMIT ?
+    """, (session_id, limit))
+    rows = c.fetchall()
+    conn.close()
+    return [{"role": row[0], "content": row[1]} for row in rows]
+
+
 def get_unextracted_messages(session_id: str) -> list:
     """获取未被AutoMemory提取过的消息"""
     conn = sqlite3.connect(DB_PATH)

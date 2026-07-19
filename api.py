@@ -182,6 +182,26 @@ async def get_current_plan(session_id: str = "default"):
 
 # ── 记忆管理接口 ──────────────────────────────────────────────
 
+@app.get("/messages")
+def get_messages(session_id: str = "default"):
+    """返回会话历史消息，用于前端刷新后恢复聊天记录。"""
+    messages = mem.get_session_messages(session_id)
+    # 同时检查是否有 pending interrupt
+    config = {"configurable": {"thread_id": session_id}}
+    interrupt_payload = None
+    if graph:
+        snapshot = graph.get_state(config)
+        if snapshot.next:
+            for task in (snapshot.tasks or []):
+                for it in (getattr(task, "interrupts", None) or []):
+                    interrupt_payload = it.value
+                    break
+    return {
+        "messages": messages,
+        "interrupt": interrupt_payload,
+    }
+
+
 @app.get("/memory/list")
 def list_memories():
     return {"memories": mem.get_all_memories()}
