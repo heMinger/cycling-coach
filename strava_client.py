@@ -34,6 +34,7 @@ class StravaClient:
             print("access_token 即将过期，正在刷新...")
             response = requests.post(
                 "https://www.strava.com/oauth/token",
+                timeout=20,
                 data={
                     "client_id": self.client_id,
                     "client_secret": self.client_secret,
@@ -62,7 +63,7 @@ class StravaClient:
         response = requests.get(
             f"{self.BASE_URL}{endpoint}",
             headers=headers,
-            params=params
+            params=params, timeout=20
         )
         response.raise_for_status()
         return response.json()

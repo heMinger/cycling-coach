@@ -18,11 +18,7 @@ def load_documents(knowledge_dir="data/knowledge", user_dir="data/user_data"):
         knowledge_dir, glob="**/*.md", loader_cls=TextLoader,
         loader_kwargs={"encoding": "utf-8"}
     )
-    loader_user = DirectoryLoader(
-        user_dir, glob="**/*.md", loader_cls=TextLoader,
-        loader_kwargs={"encoding": "utf-8"}
-    )
-    docs = loader_knowledge.load() + loader_user.load()
+    docs = loader_knowledge.load()  # 用户档案不进入通用知识索引
     print(f"加载文档数：{len(docs)}")
     return docs
 
@@ -41,8 +37,13 @@ def build_vectorstore(chunks):
         model_kwargs={"device": "cpu"},
         encode_kwargs={"normalize_embeddings": True}
     )
+    import hashlib
+    ids = [hashlib.sha256((d.metadata.get('source', '') + d.page_content).encode()).hexdigest() for d in chunks]
+    version = hashlib.sha256(''.join(ids).encode()).hexdigest()[:16]
     vectorstore = Chroma.from_documents(
         documents=chunks,
+        ids=ids,
+        collection_name="knowledge_" + version,
         embedding=embeddings,
         persist_directory="./chroma_db"
     )
@@ -71,17 +72,10 @@ def get_user_profile(_):
             wellness_context = f_intervals.result()
         print(f"并行拉取耗时：{time.time()-start:.2f}s")
 
-        data = f"""## 基本信息
-- 姓名：Minghe，女，23岁，体重63kg
-- FTP：202W，最大心率：194bpm
-
-## 训练目标
-- 截止：2026年6月15日
-- 目标FTP：220W（差18W），目标体重：60kg（差3kg）
-
-{wellness_context}
-{activity_context}
-"""
+        from datetime import datetime
+        from zoneinfo import ZoneInfo
+        captured = datetime.now(ZoneInfo("Asia/Shanghai")).isoformat()
+        data = f"[DATA_STATUS:live]\n数据获取时间：{captured}\n{wellness_context}\n{activity_context}"
         os.makedirs("cache", exist_ok=True)
         with open(CACHE_PATH, "w", encoding="utf-8") as f:
             f.write(data)
@@ -92,19 +86,19 @@ def get_user_profile(_):
         try:
             with open(CACHE_PATH, "r", encoding="utf-8") as f:
                 print("使用缓存数据")
-                return f.read()
+                return "[DATA_STATUS:cached]\n以下为过期风险未确认的缓存，不能当作今日数据。\n" + f.read()
         except FileNotFoundError:
             print("缓存不存在，使用静态档案")
             with open("data/user_data/user_profile.md", "r", encoding="utf-8") as f:
-                return f.read()
+                return "[DATA_STATUS:unavailable]\n实时数据不可用。\n" + f.read()
 
 # ── 公共：LLM 实例 ────────────────────────────────────────────
-def get_llm():
+def get_llm(temperature=0.3):
     return ChatOpenAI(
         model="deepseek-chat",
         api_key=os.getenv("DEEPSEEK_API_KEY"),
         base_url="https://api.deepseek.com",
-        temperature=0.7
+        temperature=temperature
     )
 
 # ── 意图路由 ──────────────────────────────────────────────────
@@ -169,7 +163,7 @@ def build_chain(vectorstore):
     ])
 
     def format_docs(docs):
-        return "\n\n---\n\n".join([doc.page_content for doc in docs])
+        return "\n\n---\n\n".join([f"来源：{doc.metadata.get('source', '未知')}\n{doc.page_content}" for doc in docs])
 
     def get_long_term_memory(_):
         memories = mem.get_all_memories()
@@ -189,101 +183,15 @@ def build_chain(vectorstore):
     )
     return chain
 
-# ── 计划 Pipeline ─────────────────────────────────────────────
-def run_state_analysis(user_profile: str) -> dict:
-    llm = get_llm()
-    prompt = f"""你是专业骑行教练。根据以下用户训练数据，分析当前状态。
-
-{user_profile}
-
-请严格按照以下 JSON 格式输出，不要有任何其他内容：
-{{
-  "tsb_value": 数字,
-  "tsb_interpretation": "TSB是多少，处于什么区间（精力充沛/最优训练/过渡/高风险）",
-  "week_type": "本周类型（恢复周/积累周/激活周）",
-  "reasoning": "判断理由，引用具体CTL/ATL/TSB数值",
-  "tss_limit": 数字,
-  "forbidden_zones": ["不适合的训练强度，如Z5、Z6"],
-  "recommended_intensity": "适合的训练强度建议"
-}}
-"""
-    raw = llm.invoke(prompt).content.strip()
-    if raw.startswith("```"):
-        raw = raw.split("```")[1]
-        if raw.startswith("json"):
-            raw = raw[4:]
-    try:
-        return json.loads(raw.strip())
-    except json.JSONDecodeError:
-        return {
-            "tsb_value": 0, "tsb_interpretation": "状态分析暂时无法解析",
-            "week_type": "正常训练周", "reasoning": raw,
-            "tss_limit": 400, "forbidden_zones": [],
-            "recommended_intensity": "按正常计划训练"
-        }
-
-def run_plan_generation(
-    user_request: str, state_analysis: dict,
-    user_profile: str, long_term_memory: str = ""
-) -> dict:
-    llm = get_llm()
-    constraints = f"""当前状态：{state_analysis.get('tsb_interpretation', '')}
-本周类型：{state_analysis.get('week_type', '')}
-判断依据：{state_analysis.get('reasoning', '')}
-本周TSS上限：{state_analysis.get('tss_limit', 400)}
-不适合的强度：{', '.join(state_analysis.get('forbidden_zones', [])) or '无限制'}
-强度建议：{state_analysis.get('recommended_intensity', '')}"""
-
-    memory_section = (
-        f"\n关于用户的长期记忆（制定计划时需考虑）：\n{long_term_memory}"
-        if long_term_memory else ""
-    )
-
-    prompt = f"""你是专业骑行教练。已完成状态分析如下：
-
-{constraints}
-
-用户档案：
-{user_profile}
-{memory_section}
-
-用户需求：{user_request}
-
-请严格按照以下 JSON 格式输出，不要有任何其他内容：
-{{
-  "summary": "一句话说明本周计划思路",
-  "events": [
-    {{
-      "date": "2026-04-28",
-      "name": "训练名称",
-      "description": "具体内容，包含功率区间、时长、组数等",
-      "load_target": 目标TSS数字
-    }}
-  ]
-}}
-"""
-    raw = llm.invoke(prompt).content.strip()
-    if raw.startswith("```"):
-        raw = raw.split("```")[1]
-        if raw.startswith("json"):
-            raw = raw[4:]
-    try:
-        return json.loads(raw.strip())
-    except json.JSONDecodeError:
-        raise ValueError(f"计划生成解析失败：{raw}")
-
-def run_plan_pipeline(user_request: str) -> dict:
+# ── 计划 Pipeline：完整依据卡片 + 结构化课程 + 确定性校验 ──
+def run_plan_pipeline(user_request: str, short_term_history: str = "", constraints=None) -> dict:
     import memory as mem
-    user_profile = get_user_profile(None)
-    long_term_memory = mem.get_all_memories()
-
-    print("计划Pipeline - Step 1: 状态分析...")
-    state_analysis = run_state_analysis(user_profile)
-
-    print("计划Pipeline - Step 2: 生成训练计划...")
-    plan = run_plan_generation(user_request, state_analysis, user_profile, long_term_memory)
-
-    return {"state_analysis": state_analysis, "plan": plan}
+    from planning import generate_grounded_plan
+    return generate_grounded_plan(
+        user_request, get_user_profile(None), mem.get_all_memories(),
+        history=short_term_history, constraints=constraints,
+        invoke=lambda prompt: get_llm(temperature=0.2).invoke(prompt).content,
+    )
 
 
 if __name__ == "__main__":

@@ -6,3 +6,6 @@ memory.db
 cache/
 __pycache__/
 chroma_db/
+
+# Generated evaluation output (may include model responses)
+evaluations/latest.json

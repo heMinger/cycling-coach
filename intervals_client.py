@@ -32,28 +32,28 @@ class IntervalsClient:
     def _get(self, endpoint: str, params: dict = None):
         """GET 请求封装"""
         url = f"{self.base_url}{endpoint}"
-        response = requests.get(url, headers=self.headers, params=params)
+        response = requests.get(url, headers=self.headers, params=params, timeout=20)
         response.raise_for_status()
         return response.json()
 
     def _post(self, endpoint: str, data: dict):
         """POST 请求封装"""
         url = f"{self.base_url}{endpoint}"
-        response = requests.post(url, headers=self.headers, json=data)
+        response = requests.post(url, headers=self.headers, json=data, timeout=20)
         response.raise_for_status()
         return response.json()
 
     def _put(self, endpoint: str, data: dict):
         """PUT 请求封装"""
         url = f"{self.base_url}{endpoint}"
-        response = requests.put(url, headers=self.headers, json=data)
+        response = requests.put(url, headers=self.headers, json=data, timeout=20)
         response.raise_for_status()
         return response.json()
 
     def _delete(self, endpoint: str):
         """DELETE 请求封装"""
         url = f"{self.base_url}{endpoint}"
-        response = requests.delete(url, headers=self.headers)
+        response = requests.delete(url, headers=self.headers, timeout=20)
         response.raise_for_status()
         return response.status_code
 
@@ -153,7 +153,7 @@ class IntervalsClient:
             "category": "WORKOUT",
             "type": "Ride", 
             "start_date_local": f"{date}T08:00:00",  # 默认早上8点
-            "end_date_local": f"{date}T00:00:00",
+            # 同日结束时间不能早于开始；未指定时交由平台处理。
             "name": name,
             "description": description,
         }
@@ -201,7 +201,7 @@ class IntervalsClient:
         lthr = athlete.get("lthr", "未知")
 
         # 2. 近期训练
-        activities = self.get_activities(days=activity_days)
+        activities = self.get_activities(days=activity_days) if activity_days > 0 else []
         activity_lines = []
         for a in activities:
             date = a.get("start_date_local", "")[:10]
@@ -216,7 +216,7 @@ class IntervalsClient:
 
         # 3. 健康状态
         wellness = self.get_wellness(days=7)
-        latest = wellness[-1] if wellness else {}
+        latest = max(wellness, key=lambda w: w.get("id", "")) if wellness else {}
         ctl = latest.get("ctl", "-")    # 健康度
         atl = latest.get("atl", "-")    # 疲劳度
         # tsb = latest.get("tsb", "-")    # 状态值
@@ -226,12 +226,12 @@ class IntervalsClient:
         # tsb = latest.get("tsb", "-")
 
         # 改成
-        ctl_val = latest.get("ctl", 0)
-        atl_val = latest.get("atl", 0)
-        tsb = round(ctl_val - atl_val, 1) if ctl_val and atl_val else "-"
+        ctl_val = latest.get("ctl")
+        atl_val = latest.get("atl")
+        tsb = round(ctl_val - atl_val, 1) if isinstance(ctl_val, (int, float)) and isinstance(atl_val, (int, float)) else "-"
 
         # 同时读取 eFTP
-        sport_info = latest.get("sportInfo", [])
+        sport_info = latest.get("sportInfo") or []
         ride_info = next((s for s in sport_info if s.get("type") == "Ride"), {})
         eftp = ride_info.get("eftp", None)
         eftp_str = f"{round(eftp)}W" if eftp else "未知"
@@ -253,15 +253,24 @@ class IntervalsClient:
 - 乳酸阈值心率（LTHR）：{lthr}bpm
 
 ## 当前训练状态（最新）
-- 健康度（CTL）：{ctl}
-- 疲劳度（ATL）：{atl}
+- 长期负荷模型值（CTL）：{ctl}
+- 短期负荷模型值（ATL）：{atl}
 - 状态值（TSB）：{tsb}
+- 数据日期：{latest.get('id', '未知')}
 - 变化率：{ramp}
+- eFTP（平台估计，不自动替代测试 FTP）：{eftp_str}
+- HRV：{latest.get('hrv', '未提供')}
+- 静息心率：{latest.get('restingHR', '未提供')}
+- 睡眠时长（秒，平台原始值）：{latest.get('sleepSecs', '未提供')}
+- 疲劳（平台原始评分）：{latest.get('fatigue', '未提供')}
+- 酸痛（平台原始评分）：{latest.get('soreness', '未提供')}
+- 压力（平台原始评分）：{latest.get('stress', '未提供')}
+- 字段缺失或数据日期不是今天时，不推断当天恢复状态。
 
 ## 近{activity_days}天训练记录
 | 日期 | 名称 | 时长 | 均功率 | 均心率 | TSS |
 |------|------|------|--------|--------|-----|
-{chr(10).join(activity_lines) if activity_lines else "| 暂无数据 |"}
+{chr(10).join(activity_lines) if activity_lines else ("| 活动记录由 Strava 段提供，本段不重复计入 |" if activity_days == 0 else "| 暂无数据 |")}
 
 ## 本周训练计划
 | 日期 | 名称 | 目标TSS | 描述 |
