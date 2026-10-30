@@ -1,3 +1,41 @@
+# 骑行 AI 教练
+
+## 计划质量改进分支
+
+当前计划生成已改为 `planning.py`：读取完整训练依据卡片，结合历史对话和明确约束，生成分段课程并校验。详见 [诊断与测试报告](docs/plan-quality-review.md)。
+
+关键行为与上方旧版说明不同：
+- 计划使用全部已审核的小型知识卡片，不走问答的 Top-3 检索。
+- 用户档案不再与训练知识混合索引；不再写死 FTP 或旧目标。
+- 当前数据获取失败时显示需补充信息，不生成默认 400 TSS 计划。
+- 从 `/ui` 访问时前端连接同源后端，不再连接仓库中写死的服务器地址。
+- 表单可设置开始日期、7天总时间、单日时间、不可训练日期及确认的 FTP。
+- 课程参数调整通过修改需求后重新生成；写入前由步骤重建描述，避免自由文本与计算值不一致。
+
+新的 `/plan/generate` 请求可包含 `session_id` 和 `constraints`：
+
+```json
+{"question":"根据近期训练安排耐力训练","session_id":"my-session","constraints":{"days":7,"max_minutes":180,"max_daily_minutes":60,"ftp":200,"unavailable_dates":[]}}
+```
+
+`start_date` 省略时以亚洲/上海当天为起点，需生成下周时请在界面选择日期。
+响应为 `{state_analysis, plan, constraints, validation, evidence}`；`plan.status` 为 `draft` 或 `needs_info`。
+`/plan/create` 必须接收 `{plan, constraints}`，不再接受旧版 `{events}`。前后端需同时更新。
+
+测试（Python 3.11+）：
+
+```sh
+pip install -r requirements-test.txt
+python -m unittest discover -s tests -v
+node tests/frontend.test.cjs
+python evaluations/run.py
+```
+
+最后一条仅导出提示词预览；配置 `DEEPSEEK_API_KEY` 后加 `--live` 才会调用真实模型。测试不会访问训练平台或写入日历。完整应用依赖仍见前文安装步骤。
+
+
+## 初始版本说明（接口以当前改进说明为准）
+
 # 🚴 骑行 AI 教练
 
 基于 RAG 的垂直领域智能训练对话系统。对接 Strava 和 Intervals.icu 双平台 API，实时读取训练数据，通过 LangChain + DeepSeek V3 生成个性化训练分析和建议，并支持将 AI 生成的训练计划直接写回 Intervals 日历。

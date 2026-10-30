@@ -202,6 +202,9 @@ textarea:focus { border-color: #FC4C02; }
   transition: opacity 0.3s; pointer-events: none; z-index: 999;
 }
 .toast.show { opacity: 1; }
+.plan-settings { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin-bottom:16px; }
+.plan-settings label { font-size:13px; }
+.plan-settings input { display:block; width:100%; box-sizing:border-box; margin-top:5px; padding:8px; border:1px solid #ddd; border-radius:6px; }
 </style>
 </head>
 <body>
@@ -211,7 +214,7 @@ textarea:focus { border-color: #FC4C02; }
     <div class="header-icon">🚴</div>
     <div>
       <h1>骑行 AI 教练</h1>
-      <p>Minghe · FTP 202W · 目标 220W · 6月15日</p>
+      <p>结合训练记录、当前感受和可用时间制定计划</p>
     </div>
   </div>
 
@@ -225,7 +228,7 @@ textarea:focus { border-color: #FC4C02; }
     <div class="messages" id="messages">
       <div class="message assistant">
         <div class="avatar">AI</div>
-        <div class="bubble">你好 Minghe！我已读取你的 Strava 训练数据和 Intervals 状态。
+        <div class="bubble">你好！提问后会尝试读取最新训练数据；数据不可用时会明确提示。
 
 可以直接问我训练相关的问题，或切换到「训练计划」标签让我生成本周计划。</div>
       </div>
@@ -234,7 +237,7 @@ textarea:focus { border-color: #FC4C02; }
     <div class="suggestions">
       <div class="suggestion" onclick="useSuggestion(this)">我今天状态怎么样？</div>
       <div class="suggestion" onclick="useSuggestion(this)">最近训练负荷合理吗？</div>
-      <div class="suggestion" onclick="useSuggestion(this)">距离目标 220W 还差多远？</div>
+      <div class="suggestion" onclick="useSuggestion(this)">我该怎样评估训练是否有进步？</div>
       <div class="suggestion" onclick="useSuggestion(this)">今天适合高强度训练吗？</div>
     </div>
 
@@ -261,12 +264,20 @@ textarea:focus { border-color: #FC4C02; }
         <button class="btn btn-primary" id="gen-btn" onclick="generatePlan()">生成计划</button>
       </div>
 
+      <div class="plan-settings">
+        <label>开始日期 <input id="plan-start" type="date"></label>
+        <label>7天可用总小时 <input id="plan-hours" type="number" min="0.25" max="168" step="0.25" placeholder="选填"></label>
+        <label>单日最多分钟 <input id="plan-daily" type="number" min="1" max="1440" placeholder="选填"></label>
+        <label>不可训练日期（逗号分隔）<input id="plan-offdays" type="text" placeholder="例如 2026-10-28"></label>
+        <label>确认的 FTP（W）<input id="plan-ftp" type="number" min="1" max="1000" placeholder="选填"></label>
+      </div>
+      <p>请在需求中补充近期训练、当前感受和不能训练的日期。课程参数需要调整时，请修改需求后重新生成。</p>
       <div id="plan-content">
         <div class="empty-plan">
           <div class="icon">📋</div>
           <p>输入需求，点击「生成计划」<br>
           AI 会根据你的真实训练数据生成个性化计划<br>
-          你可以直接编辑每天的内容，确认后一键写入 Intervals</p>
+          先核对课程、假设和依据，确认后一键写入 Intervals</p>
         </div>
       </div>
     </div>
@@ -277,7 +288,7 @@ textarea:focus { border-color: #FC4C02; }
 <div class="toast" id="toast"></div>
 
 <script>
-const API = 'http://106.53.60.175:8000'
+const API = location.protocol === 'file:' ? 'http://127.0.0.1:8000' : location.origin
 
 // 加在 script 顶部
 function getSessionId() {
@@ -323,7 +334,7 @@ function addMessage(role, text, cls='') {
   const div = document.createElement('div')
   div.className = `message ${role} ${cls}`
   div.innerHTML = `<div class="avatar">${role==='user'?'M':'AI'}</div>
-    <div class="bubble">${text}</div>`
+    <div class="bubble">${escapeHtml(text)}</div>`
   box.appendChild(div)
   box.scrollTop = box.scrollHeight
   return div
@@ -345,18 +356,15 @@ async function sendMessage() {
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
           question: q,
-          session_id: getSessionId()   // ← 加这个
+          session_id: getSessionId(),
+          constraints: readConstraints()
       })
     })
-    // const res = await fetch(`${API}/ask`, {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({ question: q })
-    // })
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const data = await res.json()
     thinking.remove()
     addMessage('assistant', data.answer)
+    if (data.plan_result) renderPlan(data.plan_result)
   } catch (err) {
     thinking.remove()
     addMessage('assistant', `请求失败：${err.message}\n\n请确认服务正在运行。`)
@@ -367,6 +375,24 @@ async function sendMessage() {
 
 // ── 训练计划 ──────────────────────────────────────────────────
 let currentPlan = null
+let currentConstraints = null
+const localDate = new Date().toLocaleDateString('en-CA', {timeZone:'Asia/Shanghai'})
+document.getElementById('plan-start').value = localDate
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))
+}
+function readConstraints() {
+  const result = {start_date: document.getElementById('plan-start').value, days:7}
+  for (const [id,key,multiplier] of [['plan-hours','max_minutes',60],['plan-daily','max_daily_minutes',1],['plan-ftp','ftp',1]]) {
+    const input = document.getElementById(id)
+    if (input.value) {
+      if (!input.checkValidity()) throw new Error('请检查可用时间和 FTP 的范围')
+      result[key] = Number(input.value) * multiplier
+    }
+  }
+  result.unavailable_dates = document.getElementById('plan-offdays').value.split(/[,，]/).map(s=>s.trim()).filter(Boolean)
+  return result
+}
 
 function getTSSClass(tss) {
   if (!tss || tss === 0) return ''
@@ -379,35 +405,31 @@ function getDayName(dateStr) {
   return ['周日','周一','周二','周三','周四','周五','周六'][new Date(dateStr).getDay()]
 }
 
-function renderPlan(plan) {
+function renderPlan(result) {
+  const plan = result.plan
+  if (!plan || !Array.isArray(plan.events)) throw new Error('计划响应格式不正确')
   currentPlan = JSON.parse(JSON.stringify(plan))
-  let html = `<div class="plan-summary">💡 ${plan.summary}</div><div class="plan-grid">`
-
-  plan.events.forEach((ev, i) => {
-    const isRest = ev.load_target === 0
-    const tssClass = getTSSClass(ev.load_target)
-    html += `
-    <div class="event-card ${isRest?'rest':''}">
-      <div class="event-date">${ev.date}（${getDayName(ev.date)}）</div>
-      <input class="event-name" value="${ev.name}"
-        oninput="currentPlan.events[${i}].name=this.value"/>
-      <textarea class="event-desc"
-        oninput="currentPlan.events[${i}].description=this.value">${ev.description}</textarea>
-      <div class="event-footer">
-        <span class="tss-label">目标 TSS</span>
-        <input class="tss-input" type="number" value="${ev.load_target}"
-          oninput="currentPlan.events[${i}].load_target=+this.value"/>
-        ${tssClass?`<span class="tss-badge ${tssClass}">${ev.load_target}</span>`:''}
-      </div>
+  currentConstraints = result.constraints
+  let html = `<div class="plan-summary">${escapeHtml(plan.summary)}</div>`
+  if (plan.assumptions?.length) html += `<p>假设与不确定性：${plan.assumptions.map(escapeHtml).join('；')}</p>`
+  if (plan.questions?.length) html += `<p>请补充：${plan.questions.map(escapeHtml).join('；')}</p>`
+  html += '<div class="plan-grid">'
+  plan.events.forEach(ev => {
+    html += `<div class="event-card ${ev.kind === 'rest' ? 'rest' : ''}">
+      <div class="event-date">${escapeHtml(ev.date)}（${getDayName(ev.date)}）</div>
+      <strong>${escapeHtml(ev.name)}</strong>
+      <p style="white-space:pre-wrap">${escapeHtml(ev.description)}</p>
+      <div class="event-footer">总时长 ${escapeHtml(ev.duration_minutes)} 分钟</div>
     </div>`
   })
-
-  html += `</div>
-  <div class="plan-actions">
-    <button class="btn btn-outline" onclick="generatePlan()">重新生成</button>
-    <button class="btn btn-primary" onclick="writeToPlan()">写入 Intervals 📅</button>
-  </div>`
-
+  html += '</div>'
+  if (plan.status === 'draft') html += `<p>本周期总时长：${escapeHtml(plan.total_minutes)} 分钟。日期和时长已校验；训练适用性仍需结合实际反馈。</p>
+    <div class="plan-actions"><button class="btn btn-outline" onclick="generatePlan()">重新生成</button>
+    <button class="btn btn-primary" id="write-btn" onclick="writeToPlan()">确认并写入 Intervals</button></div>`
+  const used = new Set(plan.events.flatMap(ev => ev.evidence_ids || []))
+  for (const card of result.evidence || []) {
+    if (used.has(card.id)) html += `<details><summary>训练依据：${escapeHtml(card.text.split("\n")[0].replace(/^#\s*/, ""))}</summary><pre style="white-space:pre-wrap;overflow-wrap:anywhere">${escapeHtml(card.text)}</pre></details>`
+  }
   document.getElementById('plan-content').innerHTML = html
 }
 
@@ -428,37 +450,38 @@ async function generatePlan() {
     const res = await fetch(`${API}/plan/generate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question: q })
+      body: JSON.stringify({ question: q, session_id: getSessionId(), constraints: readConstraints() })
     })
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const plan = await res.json()
-    renderPlan(plan)
+    const result = await res.json()
+    if (!res.ok) throw new Error(result.detail || `HTTP ${res.status}`)
+    renderPlan(result)
   } catch (err) {
     document.getElementById('plan-content').innerHTML = `
-      <div class="empty-plan"><p>生成失败：${err.message}</p></div>`
+      <div class="empty-plan"><p>生成失败：${escapeHtml(err.message)}</p></div>`
   }
 
   btn.disabled = false; btn.textContent = '生成计划'
 }
 
 async function writeToPlan() {
-  if (!currentPlan) return
-  const events = currentPlan.events.filter(e => e.load_target > 0)
-  if (!events.length) { showToast('没有需要写入的训练日'); return }
-
+  if (!currentPlan || currentPlan.status !== 'draft') return
+  const btn = document.getElementById('write-btn')
+  btn.disabled = true
   try {
     const res = await fetch(`${API}/plan/create`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ events })
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({plan: currentPlan, constraints: currentConstraints})
     })
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const data = await res.json()
-    showToast(`✅ 已写入 ${data.created} 个训练到 Intervals 日历`)
+    if (!res.ok) throw new Error(data.detail || `HTTP ${res.status}`)
+    showToast(`已写入 ${data.created} 个训练到 Intervals 日历`)
+    btn.textContent = '已写入'
   } catch (err) {
-    showToast(`❌ 写入失败：${err.message}`)
+    showToast(`写入失败：${err.message}。若部分已写入，请先核对日历再重试。`)
+    btn.disabled = false
   }
 }
+
 </script>
 </body>
 </html>

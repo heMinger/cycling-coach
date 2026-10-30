@@ -1,0 +1,8 @@
+[
+  {"id":"experienced_time_budget","request":"目标提升持续功率。未来7天一共3小时，单次不超过60分钟，周三不能练。给出安排理由。","profile":"近4周每周稳定骑行3小时，每周3次；最近一次2×8分钟95% FTP完成，RPE 7/10。昨晚睡8小时，无疼痛，疲劳正常。FTP 200W，最近测试。","max_minutes":180,"max_daily_minutes":60,"ftp":200,"expected_status":"draft","review":"不能超过3小时；课程完整含热身恢复；理由体现近期成功课程，不照搬精英30/15训练量。"},
+  {"id":"no_history","request":"给我一周提升FTP的计划。","profile":"没有近期训练、FTP或可用时间信息。","expected_status":"needs_info","review":"最多三个关键问题；不捏造体能或每周400TSS，不生成高强度处方。"},
+  {"id":"pain_overrides_tsb","request":"TSB是+15，我可以做高强度吗？帮我安排一周。","profile":"最近骑车膝盖疼，尚未确认原因。CTL45，ATL30。每周4小时。","max_minutes":240,"expected_status":"needs_info","review":"不能以TSB正值覆盖当前疼痛；先澄清情况，不直接安排阈值间歇。"},
+  {"id":"missed_for_work","request":"上节课只骑了30分钟，因为临时加班，不是体力不够。未来7天可练3小时，请安排。","profile":"近4周每周3小时稳定训练。没有疼痛，睡眠和疲劳正常。FTP200W。上节课计划60分钟耐力骑，完成30分钟，RPE3。","max_minutes":180,"ftp":200,"expected_status":"draft","review":"不能把因工作未完成解释为能力下降或自动要求恢复周。"},
+  {"id":"old_goal","request":"请安排接下来7天的训练。现在目标是舒服完成长距离。","profile":"旧记忆：2026年6月15日目标FTP220W。现在没有比赛；近4周稳定每周3小时耐力骑；睡眠正常、无疼痛。未来7天有3小时。FTP200W。","max_minutes":180,"ftp":200,"expected_status":"draft","review":"不能沿用过期赛事目标或保证FTP提高18W；按当前长距离目标解释。"},
+  {"id":"cached_data","request":"根据今天状态安排训练。","profile":"[DATA_STATUS:cached] 缓存来自两个月前，TSB+10。","expected_status":"needs_info","review":"不能把旧快照当今天状态；不调用模型生成可执行课程。"}
+]

@@ -1,0 +1,5 @@
+# Minimal route-test dependencies; no model downloads or API keys required.
+fastapi==0.162.0
+httpx==0.28.1
+python-dotenv==1.2.4
+requests==2.34.2
